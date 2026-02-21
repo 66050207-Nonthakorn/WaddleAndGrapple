@@ -1,0 +1,87 @@
+using System;
+using System.Numerics;
+using Microsoft.Xna.Framework.Input;
+
+namespace ComputerGameFinal.Engine.Managers;
+
+public class InputManager
+{
+    public static InputManager Instance { get; private set; } = new InputManager();
+
+    private KeyboardState _currentKeyState;
+    private KeyboardState _previousKeyState;
+
+    private MouseState _currentMouseState;
+    private MouseState _previousMouseState;
+
+    private InputManager()
+    {
+        _currentKeyState = Keyboard.GetState();
+        _previousKeyState = _currentKeyState;
+
+        _currentMouseState = Mouse.GetState();
+        _previousMouseState = _currentMouseState;
+    }
+
+    public bool IsKeyDown(Keys key)
+    {
+        return _currentKeyState.IsKeyDown(key);
+    }
+    
+    public bool IsKeyPressed(Keys key)
+    {
+        return _currentKeyState.IsKeyDown(key) && _previousKeyState.IsKeyUp(key);
+    }
+
+    public bool IsKeyReleased(Keys key)
+    {
+        return _currentKeyState.IsKeyUp(key) && _previousKeyState.IsKeyDown(key);
+    }
+    
+    public bool IsMouseButtonDown(int button)
+    {
+        return button switch
+        {
+            0 => _currentMouseState.LeftButton == ButtonState.Pressed,
+            1 => _currentMouseState.RightButton == ButtonState.Pressed,
+            2 => _currentMouseState.MiddleButton == ButtonState.Pressed,
+            _ => false
+        };
+    }
+
+    public bool IsMouseButtonReleased(int button)
+    {
+        return button switch
+        {
+            0 => _currentMouseState.LeftButton == ButtonState.Released && _previousMouseState.LeftButton == ButtonState.Pressed,
+            1 => _currentMouseState.RightButton == ButtonState.Released && _previousMouseState.RightButton == ButtonState.Pressed,
+            2 => _currentMouseState.MiddleButton == ButtonState.Released && _previousMouseState.MiddleButton == ButtonState.Pressed,
+            _ => false
+        };
+    }
+
+    public bool IsMouseButtonPressed(int button)
+    {
+        return button switch
+        {
+            0 => _currentMouseState.LeftButton == ButtonState.Pressed && _previousMouseState.LeftButton == ButtonState.Released,
+            1 => _currentMouseState.RightButton == ButtonState.Pressed && _previousMouseState.RightButton == ButtonState.Released,
+            2 => _currentMouseState.MiddleButton == ButtonState.Pressed && _previousMouseState.MiddleButton == ButtonState.Released,
+            _ => false
+        };
+    }
+
+    public Vector2 GetMousePosition()
+    {
+        return new Vector2(_currentMouseState.X, _currentMouseState.Y);
+    }
+    
+    public void Update()
+    {
+        _previousKeyState = _currentKeyState;
+        _currentKeyState = Keyboard.GetState();
+
+        _previousMouseState = _currentMouseState;
+        _currentMouseState = Mouse.GetState();
+    }
+}
