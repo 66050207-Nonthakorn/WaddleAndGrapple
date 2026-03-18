@@ -5,7 +5,7 @@ using ComputerGameFinal.Engine.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ComputerGameFinal.Game;
+namespace ComputerGameFinal.Game.Example;
 
 class MainScene : Scene
 {
@@ -30,7 +30,7 @@ class MainScene : Scene
         
         player = base.AddGameObject<Player>("player");
         player.Position = new Vector2(100, 100);
-        player.Scale = new Vector2(0.1f, 0.1f);
+        player.Scale = new Vector2(0.75f, 0.75f);
 
         camera.FollowTarget = player;
 
