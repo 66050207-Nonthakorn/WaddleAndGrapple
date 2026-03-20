@@ -58,7 +58,7 @@ public class Game1 : Microsoft.Xna.Framework.Game
         circleTexture.SetData(circleData);
         ResourceManager.Instance.LoadTexture("circle", circleTexture);
 
-        SceneManager.Instance.LoadScene("collision_demo");
+        SceneManager.Instance.LoadScene("main");
     }
 
     protected override void Update(GameTime gameTime)

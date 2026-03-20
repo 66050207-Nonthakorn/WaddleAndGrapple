@@ -31,7 +31,7 @@ public class Animator : Component
     {
         if (_currentAnimation == null) return;
 
-        _currentAnimation.Update(gameTime);
+        _currentAnimation.UpdateAnimation(gameTime);
 
         // Sync the SpriteRenderer on the same GameObject
         var renderer = GameObject.GetComponent<SpriteRenderer>();

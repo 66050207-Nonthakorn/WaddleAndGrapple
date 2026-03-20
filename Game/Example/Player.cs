@@ -1,3 +1,4 @@
+using System;
 using ComputerGameFinal.Engine;
 using ComputerGameFinal.Engine.Components;
 using ComputerGameFinal.Engine.Components.Physics;
@@ -21,13 +22,19 @@ public class Player : GameObject
         _spriteRenderer.LayerDepth = 0.5f;
         // _spriteRenderer.Texture = ResourceManager.Instance.GetTexture("bird");
 
-        Animation walk = new Animation(ResourceManager.Instance.GetTexture("mario_walk"), 3, 1, 0.2f);
-        Animation idle = new Animation(ResourceManager.Instance.GetTexture("mario_walk"), 1, 1, 0.2f);
+        AnimationFactory factory = new AnimationFactory(
+            ResourceManager.Instance.GetTexture("mario_walk"), 1, 3
+        );
+        
+        Animation idle = factory.CreateFromCell(row: 0, col: 2, totalFrames: 1, frameDuration: 0.1f);
+        Animation walk = factory.CreateFromRow(row: 0, totalFrames: 3, frameDuration: 0.1f);
+
+        Scale = new Vector2(.4f, .4f);
         
         _animator = AddComponent<Animator>();
-        _animator.AddAnimation("mario_walk", walk);
-        _animator.AddAnimation("mario_idle", idle);
-        _animator.Play("mario_idle");
+        _animator.AddAnimation("idle", idle);
+        _animator.AddAnimation("walk", walk);
+        _animator.Play("idle");
     }
 
     public override void Update(GameTime gameTime)
@@ -54,7 +61,7 @@ public class Player : GameObject
 
         if (speed != Vector2.Zero)
         {
-            _animator.Play("mario_walk");
+            _animator.Play("walk");
 
             if (speed.X < 0)
             {;
@@ -67,7 +74,7 @@ public class Player : GameObject
         }
         else
         {
-            _animator.Play("mario_idle");
+            _animator.Play("idle");
         }
 
         Position += speed * dt;

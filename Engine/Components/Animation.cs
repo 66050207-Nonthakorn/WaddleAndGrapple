@@ -4,73 +4,51 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace ComputerGameFinal.Engine.Components;
 
-public class Animation : Component
-{
-    /// <summary>The sprite sheet texture.</summary>
-    public Texture2D Sheet { get; }
+public class Animation(
+    Texture2D sheet,
+    List<Rectangle> frames,
+    float frameDuration,
+    bool isLooping = true
+) {
+    public Texture2D Sheet { get; } = sheet;
+    public Rectangle CurrentSourceRect => frames[currentFrame];
 
-    /// <summary>Source rectangle of the current frame on the sheet.</summary>
-    public Rectangle CurrentSourceRect => _frames[_currentFrameIndex];
-
-    public float FrameDuration { get; set; }
-    public bool IsLooping { get; set; } = true;
+    public float FrameDuration { get; set; } = frameDuration;
+    public bool IsLooping { get; set; } = isLooping;
     public bool IsFinished { get; private set; }
 
-    private readonly List<Rectangle> _frames;
-    private float _timer;
-    private int _currentFrameIndex;
+    private readonly List<Rectangle> frames = frames;
+    private float timer;
+    private int currentFrame;
 
-    /// <summary>
-    /// Slices a sprite sheet into frames by column and row count.
-    /// Frames are read left-to-right, top-to-bottom.
-    /// </summary>
-    public Animation(Texture2D sheet, int columns, int rows, float frameDuration)
+    public void UpdateAnimation(GameTime gameTime)
     {
-        Sheet = sheet;
-        FrameDuration = frameDuration;
-        _frames = [];
+        if (IsFinished) return;
 
-        int frameWidth  = sheet.Width  / columns;
-        int frameHeight = sheet.Height / rows;
-
-        for (int row = 0; row < rows; row++)
-            for (int col = 0; col < columns; col++)
-                _frames.Add(new Rectangle(col * frameWidth, row * frameHeight, frameWidth, frameHeight));
-    }
-
-    public Animation(Texture2D sheet, List<Rectangle> frames, float frameDuration)
-    {
-        Sheet = sheet;
-        _frames = frames;
-        FrameDuration = frameDuration;
-    }
-
-    public override void Update(GameTime gameTime)
-    {
-        if (_frames.Count == 0 || IsFinished)
-            return;
-
-        _timer += (float)gameTime.ElapsedGameTime.TotalSeconds;
-        if (_timer >= FrameDuration)
+        timer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+        if (timer >= FrameDuration)
         {
-            _timer -= FrameDuration;
-            int next = _currentFrameIndex + 1;
-            if (next >= _frames.Count)
+            timer -= FrameDuration;
+
+            int next = currentFrame + 1;
+            if (next >= frames.Count)
             {
-                if (IsLooping) _currentFrameIndex = 0;
-                else           IsFinished = true;
+                if (IsLooping)
+                    currentFrame = 0;
+                else
+                    IsFinished = true;
             }
             else
             {
-                _currentFrameIndex = next;
+                currentFrame = next;
             }
         }
     }
 
     public void Reset()
     {
-        _currentFrameIndex = 0;
-        _timer = 0f;
+        currentFrame = 0;
+        timer = 0f;
         IsFinished = false;
     }
 }

@@ -52,6 +52,11 @@ public class GameObject
         return _components.OfType<T>();
     }
 
+    public bool HasComponent<T>() where T : Component
+    {
+        return _components.OfType<T>().Any();
+    }
+
     public void RemoveComponent<T>() where T : Component
     {
         T component = GetComponent<T>();
