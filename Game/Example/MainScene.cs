@@ -25,15 +25,23 @@ class MainScene : Scene
         tilemap.GameObject.Scale = new Vector2(1f, 1f);
         tilemap.MapData = new int[,]
         {
+            { 1, 1, 1, 1, -1, -1 },
             { 5, 4, 3, 2, 1, 0 },
+            { 1, 1, 1, 1, 1, 1 },
+            { -1, -1, -1, -1, -1, -1 },
+            { 0, 0, 0, 0, 0, 0 },
+            { 1, 2, 3, 4, 5, 6 }
         };
+
+        var tileCollider = tilemapObject.AddComponent<TileCollider>();
+        tileCollider.SetSolid(0, 1, 2, 3, 4, 5);
 
         // Create camera
         cameraObject = base.AddGameObject<GameObject>("camera");
         var camera = cameraObject.AddComponent<Camera2D>();
         camera.SetViewport(new Viewport(0, 0, 800, 600));
         camera.Zoom = 1f;
-        camera.SmoothFollow = false;
+        // camera.SmoothFollow = true;
         // camera.FollowSpeed = 2f;
 
         base.Camera = camera;

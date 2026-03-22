@@ -16,11 +16,11 @@ public class Player : GameObject
     private SpriteRenderer _spriteRenderer;
     private Animator _animator;
 
+    private Rigidbody2D _rigidbody;
+
     public override void Initialize()
     {
         _spriteRenderer = AddComponent<SpriteRenderer>();
-        _spriteRenderer.LayerDepth = 0.5f;
-        // _spriteRenderer.Texture = ResourceManager.Instance.GetTexture("bird");
 
         AnimationFactory factory = new AnimationFactory(
             ResourceManager.Instance.GetTexture("mario_walk"), 1, 3
@@ -30,6 +30,13 @@ public class Player : GameObject
         Animation walk = factory.CreateFromRow(row: 0, totalFrames: 3, frameDuration: 0.1f);
 
         Scale = new Vector2(.4f, .4f);
+
+        _rigidbody = AddComponent<Rigidbody2D>();
+        _rigidbody.GravityScale = 0f;
+
+        var boxCollider = AddComponent<BoxCollider>();
+        // Frame size 190×270 at scale 0.4 → ~76×108px; center it around Position
+        boxCollider.Bounds = new Rectangle(-38, -54, 76, 108);
         
         _animator = AddComponent<Animator>();
         _animator.AddAnimation("idle", idle);
@@ -76,7 +83,7 @@ public class Player : GameObject
         {
             _animator.Play("idle");
         }
-
-        Position += speed * dt;
+        
+        _rigidbody.Velocity = speed;
     }
 }
