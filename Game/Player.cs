@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ComputerGameFinal.Engine;
 using ComputerGameFinal.Engine.Components;
@@ -73,6 +74,10 @@ public class Player : GameObject
     // ── Slide Timer ───────────────────────────────────────────────────────────
     private float _slideTimer;
 
+    // ── Coyote Time (กระโดดได้แม้เพิ่งออกจากพื้นไปไม่กี่ frame) ─────────────
+    private float _coyoteTimer;
+    private const float CoyoteTime = 0.1f;
+
     // ── Dynamic Collider Height (ลดครึ่งหนึ่งตอน Crouching/Sliding) ──────────
     private int _currentHeight = PlayerHeight;
 
@@ -101,6 +106,9 @@ public class Player : GameObject
     // อ่านได้จาก Collectible เพื่อตรวจ overlap
     public Rectangle ColliderBounds => _collider?.Bounds ?? Rectangle.Empty;
 
+    // ── Rope Dash ─────────────────────────────────────────────────────────────
+    private bool _isRopeDashing = false;
+
     // ── IcePickaxe ────────────────────────────────────────────────────────────
     public IcePickaxe Pickaxe { get; private set; }
 
@@ -108,8 +116,12 @@ public class Player : GameObject
 
     public override void Initialize()
     {
-        _spriteRenderer         = AddComponent<SpriteRenderer>();
-        _spriteRenderer.Texture = ResourceManager.Instance.GetTexture("bird"); // placeholder
+        _spriteRenderer            = AddComponent<SpriteRenderer>();
+        _spriteRenderer.Texture    = ResourceManager.Instance.GetTexture("pixel");
+        _spriteRenderer.Tint       = Color.Cyan;
+        _spriteRenderer.LayerDepth = 0.5f;
+        _spriteRenderer.Origin     = new Vector2(0.5f, 0.5f); // center บน texture 1×1
+        Scale = new Vector2(PlayerWidth, PlayerHeight); // 40×60 px
         // TODO (Phase 9): _animator = AddComponent<Animator>();
 
         _collider = AddComponent<PlayerBoxCollider>();
@@ -147,11 +159,16 @@ public class Player : GameObject
             return;
         }
 
+        // Coyote time — reset เมื่ออยู่บนพื้น, นับถอยหลังเมื่ออยู่ในอากาศ
+        if (IsGrounded) _coyoteTimer = CoyoteTime;
+        else if (_coyoteTimer > 0f) _coyoteTimer -= dt;
+
         // Phase 3 — Input (ต้องก่อน physics เพื่อให้ intent ถูก)
         HandleSlide(dt);
         HandleCrouch();
         HandleMove();
-        HandleSprint();
+        if (Pickaxe.IsHooked) HandleRopeLaunch();
+        else                { _isRopeDashing = false; HandleSprint(); }
         HandleWallCling();
         HandleLedgeGrab();
         HandleJump();
@@ -217,7 +234,7 @@ public class Player : GameObject
         // _spriteRenderer.Effects = FacingDirection == -1 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
 
         // อัปเดต state เมื่ออยู่บนพื้น
-        if (IsGrounded && State != PlayerState.Crouching && State != PlayerState.Sprinting)
+        if (IsGrounded && State != PlayerState.Crouching)
             ChangeState(VelocityX == 0f ? PlayerState.Idle : PlayerState.Running);
 
         // เข้า Falling ถ้าเดินออกจากขอบโดยไม่ได้กระโดด
@@ -251,6 +268,39 @@ public class Player : GameObject
     }
 
     /// <summary>
+    /// Left Shift ขณะแขวนเชือก: พุ่งตรงไปยัง hook point
+    /// ใช้ทิศทาง Player → HookPosition เป็น launch vector
+    /// </summary>
+    private void HandleRopeLaunch()
+    {
+        // เริ่ม dash เมื่อกด Left Shift ขณะแขวนเชือก
+        if (!_isRopeDashing)
+        {
+            if (!InputManager.Instance.IsKeyDown(Keys.LeftShift)) return;
+            _isRopeDashing = true;
+        }
+
+        // ดึงตัวเองตรงไปยัง hook ตลอดเวลา (เชือกยังอยู่)
+        var dir  = Pickaxe.HookPosition - Position;
+        float dist = dir.Length();
+
+        if (dist < 20f)
+        {
+            // ถึง hook แล้ว → recall แล้วพุ่งต่อด้วย momentum เดิม
+            _isRopeDashing = false;
+            Pickaxe.Recall();
+            ChangeState(PlayerState.Jumping);
+            return;
+        }
+
+        dir.Normalize();
+        const float DashSpeed = 900f;
+        VelocityX = dir.X * DashSpeed;
+        VelocityY = dir.Y * DashSpeed;
+        ChangeState(PlayerState.Jumping);
+    }
+
+    /// <summary>
     /// Space: กระโดด 4 แบบ —
     ///   Ground Jump, Wall Jump (kick away), Ledge Jump, Double Jump (PowerUp)
     /// </summary>
@@ -258,9 +308,11 @@ public class Player : GameObject
     {
         if (!InputManager.Instance.IsKeyPressed(Keys.Space)) return;
 
-        if (IsGrounded)
+        if (IsGrounded || _coyoteTimer > 0f)
         {
-            VelocityY = JumpForce;
+            if (State == PlayerState.Crouching) SetCrouchHeight(false); // reset ก่อน jump
+            VelocityY    = JumpForce;
+            _coyoteTimer = 0f;
             ChangeState(PlayerState.Jumping);
         }
         else if (State == PlayerState.WallClinging)
@@ -278,9 +330,10 @@ public class Player : GameObject
         }
         else if (Pickaxe.IsHooked)
         {
-            // ปล่อยตัวจาก rope ด้วย momentum ที่มีอยู่ (ไม่เพิ่ม force ใหม่)
+            // กระโดดออกจาก rope พร้อม jump force
             Pickaxe.Recall();
-            ChangeState(VelocityY <= 0f ? PlayerState.Jumping : PlayerState.Falling);
+            VelocityY = JumpForce;
+            ChangeState(PlayerState.Jumping);
         }
         else if (HasDoubleJump && !HasUsedDoubleJump)
         {
@@ -325,20 +378,24 @@ public class Player : GameObject
     /// </summary>
     private void HandleCrouch()
     {
-        if (!IsGrounded || State == PlayerState.Sliding) return;
-
         bool crouchHeld = InputManager.Instance.IsKeyDown(Keys.S)
                        || InputManager.Instance.IsKeyDown(Keys.Down);
 
-        if (crouchHeld && State != PlayerState.Crouching)
+        // ถ้าไม่กด S แต่ height ยังเป็น crouch → restore เสมอ (source of truth คือ _currentHeight)
+        if (!crouchHeld && _currentHeight != PlayerHeight && State != PlayerState.Sliding)
+        {
+            SetCrouchHeight(false);
+            if (State == PlayerState.Crouching)
+                ChangeState(VelocityX == 0f ? PlayerState.Idle : PlayerState.Running);
+            return;
+        }
+
+        if (!IsGrounded || State == PlayerState.Sliding) return;
+
+        if (crouchHeld && _currentHeight == PlayerHeight && State != PlayerState.Crouching)
         {
             SetCrouchHeight(true);
             ChangeState(PlayerState.Crouching);
-        }
-        else if (!crouchHeld && State == PlayerState.Crouching)
-        {
-            SetCrouchHeight(false);
-            ChangeState(VelocityX == 0f ? PlayerState.Idle : PlayerState.Running);
         }
     }
 
@@ -417,6 +474,7 @@ public class Player : GameObject
         float bottomY  = Position.Y + _currentHeight / 2f; // เก็บขอบล่างไว้ก่อน
         _currentHeight = crouching ? PlayerHeight / 2 : PlayerHeight;
         Position       = new Vector2(Position.X, bottomY - _currentHeight / 2f);
+        Scale          = new Vector2(PlayerWidth, _currentHeight); // sync sprite
         UpdateColliderBounds();
     }
 

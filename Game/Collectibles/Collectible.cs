@@ -1,5 +1,6 @@
 using ComputerGameFinal.Engine;
 using ComputerGameFinal.Engine.Components.Physics;
+using ComputerGameFinal.Game.Example;
 using Microsoft.Xna.Framework;
 
 namespace ComputerGameFinal.Game;

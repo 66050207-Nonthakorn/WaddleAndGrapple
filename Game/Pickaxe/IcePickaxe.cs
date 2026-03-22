@@ -1,5 +1,6 @@
 using System;
 using ComputerGameFinal.Engine.Managers;
+using ComputerGameFinal.Game.Example;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;

@@ -1,3 +1,5 @@
+using ComputerGameFinal.Game.Example;
+
 namespace ComputerGameFinal.Game;
 
 /// <summary>

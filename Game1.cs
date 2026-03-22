@@ -70,7 +70,7 @@ public class Game1 : Microsoft.Xna.Framework.Game
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.White);
+        GraphicsDevice.Clear(new Color(0, 20, 60)); // กรมท่า
         
         var currentScene = SceneManager.Instance.CurrentScene;
         Matrix cameraTransform = currentScene?.GetCameraTransform() ?? Matrix.Identity;
