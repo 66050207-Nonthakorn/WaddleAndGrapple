@@ -2,7 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ComputerGameFinal.Engine.Components;
+namespace WaddleAndGrapple.Engine.Components;
 
 public class SpriteRenderer : Component
 {

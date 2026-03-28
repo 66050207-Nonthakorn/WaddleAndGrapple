@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
       {
-        "name": "C#: ComputerGameFinal Debug",
+        "name": "C#: WaddleAndGrapple Debug",
         "type": "dotnet",
         "request": "launch",
-        "projectPath": "${workspaceFolder}/ComputerGameFinal.csproj"
+        "projectPath": "${workspaceFolder}/WaddleAndGrapple.csproj"
       }
     ],
   }

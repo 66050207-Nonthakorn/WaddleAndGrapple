@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ComputerGameFinal.Engine.Components;
+namespace WaddleAndGrapple.Engine.Components;
 
 public class Animation(
     Texture2D sheet,

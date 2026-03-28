@@ -1,18 +1,16 @@
-﻿using System;
-using ComputerGameFinal.Engine.Managers;
-using ComputerGameFinal.Game.Example;
-using ComputerGameFinal.Game.Scenes;
+using WaddleAndGrapple.Engine.Managers;
+using WaddleAndGrapple.Game.Example;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
+using ResourceManager = WaddleAndGrapple.Engine.Managers.ResourceManager;
+using MonoGameGum;
+using WaddleAndGrapple.Game.Scenes;
 using Gum.Forms;
 using Gum.Forms.Controls;
-using MonoGameGum;
+using System;
 using Gum.Wireframe;
 
-using ResourceManager = ComputerGameFinal.Engine.Managers.ResourceManager;
-
-namespace ComputerGameFinal;
+namespace WaddleAndGrapple;
 
 public class Game1 : Microsoft.Xna.Framework.Game
 {
@@ -30,14 +28,6 @@ public class Game1 : Microsoft.Xna.Framework.Game
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
-
-        _graphics.PreferredBackBufferWidth = _nativeWidth;
-        _graphics.PreferredBackBufferHeight = _nativeHeight;
-        _graphics.ApplyChanges();
-
-        Window.AllowUserResizing = true;
-        Window.ClientSizeChanged += OnClientSizeChanged;
-        
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
     }
@@ -106,7 +96,7 @@ public class Game1 : Microsoft.Xna.Framework.Game
         }
         circleTexture.SetData(circleData);
         ResourceManager.Instance.LoadTexture("circle", circleTexture);
-        
+
         SceneManager.Instance.LoadScene("main");
     }
 
@@ -151,6 +141,7 @@ public class Game1 : Microsoft.Xna.Framework.Game
                 (asInteractiveGue.FormsControlAsObject as IUpdateable)?.Update(gameTime);
         }
         SceneManager.Instance.CurrentScene.Update(gameTime);
+
         base.Update(gameTime);
     }
 

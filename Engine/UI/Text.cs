@@ -1,9 +1,9 @@
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ComputerGameFinal.Engine.Components;
+using WaddleAndGrapple.Engine.Components;
 
-namespace ComputerGameFinal.Engine.UI;
+namespace WaddleAndGrapple.Engine.UI;
 
 public class Text : Component
 {

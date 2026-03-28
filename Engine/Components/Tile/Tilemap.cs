@@ -1,13 +1,14 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ComputerGameFinal.Engine.Components.Tile;
+namespace WaddleAndGrapple.Engine.Components.Tile;
 
 public class Tilemap : Component
 {
     public Texture2D Tileset { get; set; }
     public int SourceTileSize { get; set; }
     public int DestinationTileSize { get; set; }
+    
     public float Layer { get; set; } = 0f;
     public int [,] MapData { get; set; }
 

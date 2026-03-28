@@ -1,2 +1,2 @@
-﻿using var game = new ComputerGameFinal.Game1();
+﻿using var game = new WaddleAndGrapple.Game1();
 game.Run();
