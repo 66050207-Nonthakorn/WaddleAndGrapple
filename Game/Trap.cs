@@ -15,7 +15,7 @@ public abstract class Trap : GameObject
     /// <summary>Reference to the player. Set this from the scene after creating the trap.</summary>
     public Player Player { get; set; }
 
-    private SpriteRenderer _spriteRenderer;
+    protected SpriteRenderer _spriteRenderer;
 
     public override void Initialize()
     {
@@ -28,11 +28,16 @@ public abstract class Trap : GameObject
         if (!IsActive) return;
         OnUpdate(gameTime);
 
-        // TODO: Check collision with player
-        if (Player != null)
-        {
-            // if (IsPlayerInRange(Player)) OnPlayerEnter(Player);
-        }
+        if (Player != null && IsPlayerInRange(Player))
+            OnPlayerEnter(Player);
+    }
+
+    private bool IsPlayerInRange(Player player)
+    {
+        var trapBounds = new Microsoft.Xna.Framework.Rectangle(
+            (int)Position.X, (int)Position.Y,
+            (int)Scale.X,    (int)Scale.Y);
+        return trapBounds.Intersects(player.ColliderBounds);
     }
 
     /// <summary>Called once when the trap is set up. Override to load sprites, set size, etc.</summary>

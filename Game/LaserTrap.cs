@@ -16,6 +16,15 @@ public class LaserTrap : Trap
     // Direction of the laser beam: horizontal or vertical
     public bool IsHorizontal { get; set; } = true;
 
+    // Length of the beam in pixels (head + beam + tail)
+    public float BeamLength { get; set; } = 200f;
+
+    // If true, beam never toggles off (ignores OnDuration/OffDuration)
+    public bool AlwaysOn { get; set; } = false;
+
+    // Read by LaserRenderer to decide which colour to draw
+    public bool BeamOn => _beamOn;
+
     private float _timer = 0f;
     private bool _beamOn = true;
 
@@ -23,16 +32,22 @@ public class LaserTrap : Trap
     {
         Damage = 1;
 
-        // TODO: Load laser sprite / texture
-        // _spriteRenderer.Texture = ResourceManager.Instance.GetTexture("laser");
+        // Collision bounding box = full head-to-tail rectangle
+        float E = LaserRenderer.EndpointSize;
+        Scale = IsHorizontal
+            ? new Vector2(BeamLength, E)
+            : new Vector2(E, BeamLength);
+
+        AddComponent<LaserRenderer>();
     }
 
     protected override void OnUpdate(GameTime gameTime)
     {
+        if (AlwaysOn) return;
+
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
         _timer += dt;
 
-        // Toggle beam on/off based on duration
         if (_beamOn && _timer >= OnDuration)
         {
             _beamOn = false;
@@ -43,15 +58,11 @@ public class LaserTrap : Trap
             _beamOn = true;
             _timer = 0f;
         }
-
-        // TODO: Update laser beam visual (enable/disable sprite or draw line)
     }
 
     protected override void OnPlayerEnter(Player player)
     {
         if (!_beamOn) return;
-
-        // TODO: Deal damage to player
-        // player.TakeDamage(Damage);
+        player.Die();
     }
 }

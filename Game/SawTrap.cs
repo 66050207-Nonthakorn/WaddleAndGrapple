@@ -25,39 +25,36 @@ public class SawTrap : Trap
         Damage = 1;
         _startPosition = Position;
 
-        // TODO: Load saw sprite / texture
-        // _spriteRenderer.Texture = ResourceManager.Instance.GetTexture("saw");
+        Scale = new Vector2(30, 30);
+        _spriteRenderer.Texture    = ResourceManager.Instance.GetTexture("pixel");
+        _spriteRenderer.Tint       = Color.Red;
+        _spriteRenderer.LayerDepth = 0.6f;
     }
 
     protected override void OnUpdate(GameTime gameTime)
     {
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-        // Move saw back and forth
         if (MoveHorizontal)
         {
             Position = new Vector2(Position.X + MoveSpeed * _moveDirection * dt, Position.Y);
 
             float distanceMoved = Position.X - _startPosition.X;
-            if (distanceMoved >= MoveRange || distanceMoved <= 0)
-                _moveDirection *= -1f;
+            if (distanceMoved >= MoveRange) _moveDirection = -1f;
+            else if (distanceMoved <= 0f)   _moveDirection =  1f;
         }
         else
         {
             Position = new Vector2(Position.X, Position.Y + MoveSpeed * _moveDirection * dt);
 
             float distanceMoved = Position.Y - _startPosition.Y;
-            if (distanceMoved >= MoveRange || distanceMoved <= 0)
-                _moveDirection *= -1f;
+            if (distanceMoved >= MoveRange) _moveDirection = -1f;
+            else if (distanceMoved <= 0f)   _moveDirection =  1f;
         }
-
-        // TODO: Rotate sprite to simulate spinning saw
-        // Rotation += someRotationSpeed * dt;
     }
 
     protected override void OnPlayerEnter(Player player)
     {
-        // TODO: Deal damage to player
-        // player.TakeDamage(Damage);
+        player.Die();
     }
 }

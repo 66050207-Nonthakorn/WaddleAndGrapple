@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using ComputerGameFinal.Engine;
 using ComputerGameFinal.Engine.Components;
 using ComputerGameFinal.Engine.Managers;
+using ComputerGameFinal.Game;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using GamePlayer = ComputerGameFinal.Game.Player;
@@ -70,5 +71,39 @@ class MainScene : Scene
         player.SetSolids(solids);
 
         camera.FollowTarget = player;
+
+        // Laser 1: ค้างตลอด — แนวนอน ขวางช่วง x=450-650 ที่ระดับตัวผู้เล่น
+        var laser1 = base.AddGameObject<LaserTrap>("laser_always");
+        laser1.Position     = new Vector2(450, 406);
+        laser1.BeamLength   = 200f;
+        laser1.IsHorizontal = true;
+        laser1.AlwaysOn     = true;
+        laser1.Player       = player;
+
+        // Laser 2: เปิด-ปิดตามเวลา (2s on / 1.5s off) — แนวตั้ง ขวางทางเดิน x=320
+        var laser2 = base.AddGameObject<LaserTrap>("laser_timed");
+        laser2.Position     = new Vector2(320, 300);
+        laser2.BeamLength   = 150f;
+        laser2.IsHorizontal = false;
+        laser2.AlwaysOn     = false;
+        laser2.OnDuration   = 2f;
+        laser2.OffDuration  = 1.5f;
+        laser2.Player       = player;
+
+        // Saw trap บนพื้น — เดินซ้ายขวาระหว่าง x=100 ถึง x=300
+        var saw1 = base.AddGameObject<SawTrap>("saw1");
+        saw1.Position      = new Vector2(100, 420);
+        saw1.MoveRange     = 200f;
+        saw1.MoveSpeed     = 100f;
+        saw1.MoveHorizontal = true;
+        saw1.Player        = player;
+
+        // Saw trap บน platform กลาง — เดินซ้ายขวาระหว่าง x=360 ถึง x=510
+        var saw2 = base.AddGameObject<SawTrap>("saw2");
+        saw2.Position      = new Vector2(360, 270);
+        saw2.MoveRange     = 150f;
+        saw2.MoveSpeed     = 120f;
+        saw2.MoveHorizontal = true;
+        saw2.Player        = player;
     }
 }
