@@ -1,22 +1,44 @@
-using System.Collections.Generic;
-using ComputerGameFinal.Engine;
-using ComputerGameFinal.Engine.Components;
-using ComputerGameFinal.Engine.Managers;
+using WaddleAndGrapple.Engine;
+using WaddleAndGrapple.Engine.Components;
+using WaddleAndGrapple.Engine.Components.Tile;
+using WaddleAndGrapple.Engine.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameGum;
+using System.Collections.Generic;
 using GamePlayer = ComputerGameFinal.Game.Player;
 
-namespace ComputerGameFinal.Game.Example;
+namespace WaddleAndGrapple.Game.Example;
 
 class MainScene : Scene
 {
     GamePlayer player;
     GameObject cameraObject;
+    GameObject tilemapObject;
 
     public override void Setup()
     {
-        // Camera
+        // Create tilemap first
+        tilemapObject = base.AddGameObject<GameObject>("tilemap");
+        var tilemap = tilemapObject.AddComponent<Tilemap>();
+        tilemap.Tileset = ResourceManager.Instance.GetTexture("Tiles/tileset");
+        tilemap.SourceTileSize = 75;
+        tilemap.DestinationTileSize = 75;
+        tilemap.Layer = 0.5f;
+        tilemap.MapData = new int[,]
+        {
+            { 1, 1, 1, 1, -1, -1 },
+            { 5, 4, 3, 2, 1, 0 },
+            { 1, 1, 1, 1, 1, 1 },
+            { 1, 2, 3, 4, 5, 6 }
+        };
+
+        tilemap.GameObject.Scale = new Vector2(1f, 1f);
+
+        var tileCollider = tilemapObject.AddComponent<TileCollider>();
+        tileCollider.SetSolid(0, 1, 2, 3, 4, 5);
+
+        // Create camera
         cameraObject = base.AddGameObject<GameObject>("camera");
         var camera = cameraObject.AddComponent<Camera2D>();
         camera.SetViewport(new Viewport(
@@ -39,7 +61,7 @@ class MainScene : Scene
         for (int i = 0; i < 6; i++)
         {
             var tile = base.AddGameObject<GameObject>($"floor_{i}");
-            tile.Position = new Vector2(i * 150, 450); // top-left ของแต่ละช่อง
+            tile.Position = new Vector2(i * 150, 450);
             tile.Scale    = new Vector2(150, 150);
             var sr        = tile.AddComponent<SpriteRenderer>();
             sr.Texture    = ResourceManager.Instance.GetTexture("pixel");
@@ -47,11 +69,11 @@ class MainScene : Scene
             sr.LayerDepth = 0.1f;
         }
 
-        // Platforms (x, y, width, height) — y คือ top ของ platform
+        // Platforms (x, y, width, height)
         var platforms = new (int x, int y, int w, int h)[]
         {
-            (350, 300, 200, 30),  // platform กลาง
-            (600, 180, 150, 30),  // platform สูง
+            (350, 300, 200, 30),
+            (600, 180, 150, 30),
         };
 
         var platformColors = new[] { new Color(80, 120, 80), new Color(60, 100, 60) };
@@ -69,9 +91,9 @@ class MainScene : Scene
         // Solid rects สำหรับ collision
         var solids = new List<Microsoft.Xna.Framework.Rectangle>
         {
-            new(0,   450, 900, 150),  // พื้น
-            new(350, 300, 200,  30),  // platform กลาง
-            new(600, 180, 150,  30),  // platform สูง
+            new(0,   450, 900, 150),
+            new(350, 300, 200,  30),
+            new(600, 180, 150,  30),
         };
         player.SetSolids(solids);
 

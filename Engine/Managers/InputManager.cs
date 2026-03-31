@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using Microsoft.Xna.Framework.Input;
 
-namespace ComputerGameFinal.Engine.Managers;
+namespace WaddleAndGrapple.Engine.Managers;
 
 public class InputManager
 {

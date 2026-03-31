@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ComputerGameFinal.Engine.Managers;
+namespace WaddleAndGrapple.Engine.Managers;
 
 public class SceneManager
 {

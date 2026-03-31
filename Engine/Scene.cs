@@ -4,10 +4,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using ComputerGameFinal.Engine.Components;
-using ComputerGameFinal.Engine.Components.Physics;
+using WaddleAndGrapple.Engine.Components;
+using WaddleAndGrapple.Engine.Components.Physics;
 
-namespace ComputerGameFinal.Engine;
+namespace WaddleAndGrapple.Engine;
 
 public abstract class Scene
 {
@@ -19,6 +19,11 @@ public abstract class Scene
     private HashSet<ColliderPair> _currentCollisions = [];
     
     public Camera2D Camera { get; set; }
+
+    public IEnumerable<T> GetComponents<T>() where T : Component
+        => GameObjects.Values
+            .Where(go => go.Active)
+            .SelectMany(go => go.GetComponents<T>().Where(c => c.Enabled));
 
     // For add game objects
     public abstract void Setup();
