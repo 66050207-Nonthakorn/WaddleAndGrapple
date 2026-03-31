@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 
-namespace ComputerGameFinal.Game;
+namespace WaddleAndGrapple.Game;
 
 /// <summary>
 /// Singleton that tracks which section the player is currently in and from which

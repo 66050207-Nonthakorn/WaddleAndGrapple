@@ -1,7 +1,7 @@
-using ComputerGameFinal.Engine.Managers;
+using WaddleAndGrapple.Engine.Managers;
 using Microsoft.Xna.Framework;
 
-namespace ComputerGameFinal.Game;
+namespace WaddleAndGrapple.Game;
 
 /// <summary>
 /// A saw blade trap that moves back and forth along a path and damages the player on contact.

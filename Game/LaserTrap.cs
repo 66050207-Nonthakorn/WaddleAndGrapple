@@ -1,7 +1,7 @@
-using ComputerGameFinal.Engine.Managers;
+using WaddleAndGrapple.Engine.Managers;
 using Microsoft.Xna.Framework;
 
-namespace ComputerGameFinal.Game;
+namespace WaddleAndGrapple.Game;
 
 /// <summary>
 /// A laser beam trap that damages the player when they cross the beam.

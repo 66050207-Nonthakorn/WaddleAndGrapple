@@ -1,8 +1,8 @@
 using System;
-using ComputerGameFinal.Engine.Managers;
+using WaddleAndGrapple.Engine.Managers;
 using Microsoft.Xna.Framework;
 
-namespace ComputerGameFinal.Game;
+namespace WaddleAndGrapple.Game;
 
 public enum SpikeOrigin { Floor, Ceiling, LeftWall, RightWall }
 
