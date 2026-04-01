@@ -157,7 +157,6 @@ public class Game1 : Microsoft.Xna.Framework.Game
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.Black);
-        GraphicsDevice.Clear(Color.Black);
         
         var currentScene = SceneManager.Instance.CurrentScene;
         Matrix cameraTransform = currentScene?.GetCameraTransform() ?? Matrix.Identity;
