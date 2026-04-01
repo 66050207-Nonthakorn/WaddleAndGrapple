@@ -141,18 +141,26 @@ class MainScene : Scene
         // ZONE 1 — Saw Traps
         // ═══════════════════════════════════════════════════════════════════
         var saw1 = base.AddGameObject<SawTrap>("saw1");
-        saw1.Position       = new Vector2(320, 420);
-        saw1.MoveRange      = 200f;
-        saw1.MoveSpeed      = 100f;
-        saw1.MoveHorizontal = true;
-        saw1.Player         = player;
+        saw1.Position          = new Vector2(320, 420);
+        saw1.MoveRange         = 200f;
+        saw1.MoveSpeed         = 100f;
+        saw1.MoveHorizontal    = true;
+        saw1.BladeSize         = 50f;
+        saw1.SpriteTextureName = "Traps/Saw/LargeSaw";
+        saw1.SpriteTint        = Color.White;
+        saw1.Placement         = SawPlacement.FloorMounted;
+        saw1.Player            = player;
 
         var saw2 = base.AddGameObject<SawTrap>("saw2");
-        saw2.Position       = new Vector2(360, 270);
-        saw2.MoveRange      = 150f;
-        saw2.MoveSpeed      = 120f;
-        saw2.MoveHorizontal = true;
-        saw2.Player         = player;
+        saw2.Position          = new Vector2(360, 270);
+        saw2.MoveRange         = 150f;
+        saw2.MoveSpeed         = 120f;
+        saw2.MoveHorizontal    = true;
+        saw2.BladeSize         = 40f;
+        saw2.SpriteTextureName = "Traps/Saw/MediumSaw";
+        saw2.SpriteTint        = Color.White;
+        saw2.Placement         = SawPlacement.Floating;
+        saw2.Player            = player;
 
         // ═══════════════════════════════════════════════════════════════════
         // ZONE 2 — Laser Traps
@@ -161,6 +169,9 @@ class MainScene : Scene
         laser1.Position     = new Vector2(450, 406);
         laser1.BeamLength   = 200f;
         laser1.IsHorizontal = true;
+        laser1.Style        = LaserStyle.WallMounted;
+        laser1.EndpointScale = 2.0f;
+        laser1.BeamThicknessScale = 1.35f;
         laser1.AlwaysOn     = true;
         laser1.Player       = player;
 
@@ -168,9 +179,12 @@ class MainScene : Scene
         laser2.Position     = new Vector2(320, 300);
         laser2.BeamLength   = 150f;
         laser2.IsHorizontal = false;
+        laser2.Style        = LaserStyle.Floating;
+        laser2.EndpointScale = 2.0f;
+        laser2.BeamThicknessScale = 1.35f;
         laser2.AlwaysOn     = false;
-        laser2.OnDuration   = 2f;
-        laser2.OffDuration  = 1.5f;
+        laser2.OnDuration   = 2.4f;
+        laser2.OffDuration  = 1.8f;
         laser2.Player       = player;
 
         // ═══════════════════════════════════════════════════════════════════
@@ -181,11 +195,13 @@ class MainScene : Scene
         for (int i = 0; i < 4; i++)
         {
             var s = base.AddGameObject<SpikeTrap>($"spike_floor_{i}");
-            s.Position    = new Vector2(floorSpikeX[i], 450);
-            s.Origin      = SpikeOrigin.Floor;
-            s.SpikeLength = 45f;
-            s.PhaseOffset = floorPhase[i];
-            s.Player      = player;
+            s.Position          = new Vector2(floorSpikeX[i], 450);
+            s.Origin            = SpikeOrigin.Floor;
+            s.SpikeLength       = 45f;
+            s.PhaseOffset       = floorPhase[i];
+            s.SpriteTextureName = "Traps/Spike/Spike";
+            s.SpriteTint        = Color.White;
+            s.Player            = player;
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -196,64 +212,81 @@ class MainScene : Scene
         for (int i = 0; i < 3; i++)
         {
             var s = base.AddGameObject<SpikeTrap>($"spike_ceil_{i}");
-            s.Position    = new Vector2(ceilSpikeX[i], 380);
-            s.Origin      = SpikeOrigin.Ceiling;
-            s.SpikeLength = 45f;
-            s.PhaseOffset = ceilPhase[i];
-            s.Player      = player;
+            s.Position          = new Vector2(ceilSpikeX[i], 380);
+            s.Origin            = SpikeOrigin.Ceiling;
+            s.SpikeLength       = 45f;
+            s.PhaseOffset       = ceilPhase[i];
+            s.SpriteTextureName = "Traps/Spike/Spike";
+            s.SpriteTint        = Color.White;
+            s.Player            = player;
         }
 
         // ═══════════════════════════════════════════════════════════════════
         // ZONE 5 — Wall Spikes
         // ═══════════════════════════════════════════════════════════════════
         var spikeWallL = base.AddGameObject<SpikeTrap>("spike_wall_left");
-        spikeWallL.Position    = new Vector2(1540, 405);
-        spikeWallL.Origin      = SpikeOrigin.LeftWall;
-        spikeWallL.SpikeLength = 55f;
-        spikeWallL.PhaseOffset = 0f;
-        spikeWallL.Player      = player;
+        spikeWallL.Position          = new Vector2(1540, 405);
+        spikeWallL.Origin            = SpikeOrigin.LeftWall;
+        spikeWallL.SpikeLength       = 55f;
+        spikeWallL.PhaseOffset       = 0f;
+        spikeWallL.SpriteTextureName = "Traps/Spike/Spike";
+        spikeWallL.SpriteTint        = Color.White;
+        spikeWallL.Player            = player;
 
         var spikeWallR = base.AddGameObject<SpikeTrap>("spike_wall_right");
-        spikeWallR.Position    = new Vector2(1680, 405);
-        spikeWallR.Origin      = SpikeOrigin.RightWall;
-        spikeWallR.SpikeLength = 55f;
-        spikeWallR.PhaseOffset = 0.75f;
-        spikeWallR.Player      = player;
+        spikeWallR.Position          = new Vector2(1680, 405);
+        spikeWallR.Origin            = SpikeOrigin.RightWall;
+        spikeWallR.SpikeLength       = 55f;
+        spikeWallR.PhaseOffset       = 0.75f;
+        spikeWallR.SpriteTextureName = "Traps/Spike/Spike";
+        spikeWallR.SpriteTint        = Color.White;
+        spikeWallR.Player            = player;
 
         // ═══════════════════════════════════════════════════════════════════
         // ZONE 6 — Final Floor Spikes
         // ═══════════════════════════════════════════════════════════════════
         var spikeFinalA = base.AddGameObject<SpikeTrap>("spike_final_a");
-        spikeFinalA.Position    = new Vector2(1740, 450);
-        spikeFinalA.Origin      = SpikeOrigin.Floor;
-        spikeFinalA.SpikeLength = 45f;
-        spikeFinalA.PhaseOffset = 0f;
-        spikeFinalA.Player      = player;
+        spikeFinalA.Position          = new Vector2(1740, 450);
+        spikeFinalA.Origin            = SpikeOrigin.Floor;
+        spikeFinalA.SpikeLength       = 45f;
+        spikeFinalA.PhaseOffset       = 0f;
+        spikeFinalA.SpriteTextureName = "Traps/Spike/Spike";
+        spikeFinalA.SpriteTint        = Color.White;
+        spikeFinalA.Player            = player;
 
         var spikeFinalB = base.AddGameObject<SpikeTrap>("spike_final_b");
-        spikeFinalB.Position    = new Vector2(1775, 450);
-        spikeFinalB.Origin      = SpikeOrigin.Floor;
-        spikeFinalB.SpikeLength = 45f;
-        spikeFinalB.PhaseOffset = 0.7f;
-        spikeFinalB.Player      = player;
+        spikeFinalB.Position          = new Vector2(1775, 450);
+        spikeFinalB.Origin            = SpikeOrigin.Floor;
+        spikeFinalB.SpikeLength       = 45f;
+        spikeFinalB.PhaseOffset       = 0.7f;
+        spikeFinalB.SpriteTextureName = "Traps/Spike/Spike";
+        spikeFinalB.SpriteTint        = Color.White;
+        spikeFinalB.Player            = player;
 
         // ═══════════════════════════════════════════════════════════════════
         // ZONE 7 — Mini Demo Map
         // ═══════════════════════════════════════════════════════════════════
         var saw3 = base.AddGameObject<SawTrap>("saw_mini_1");
-        saw3.Position       = new Vector2(2030, 230);
-        saw3.MoveRange      = 120f;
-        saw3.MoveSpeed      = 110f;
-        saw3.MoveHorizontal = true;
-        saw3.Player         = player;
+        saw3.Position          = new Vector2(2030, 230);
+        saw3.MoveRange         = 120f;
+        saw3.MoveSpeed         = 110f;
+        saw3.MoveHorizontal    = true;
+        saw3.BladeSize         = 40f;
+        saw3.SpriteTextureName = "Traps/Saw/MediumSaw";
+        saw3.SpriteTint        = Color.White;
+        saw3.Placement         = SawPlacement.Floating;
+        saw3.AnimationColumns  = 4;
+        saw3.Player            = player;
 
         var laser3 = base.AddGameObject<LaserTrap>("laser_mini_gate");
         laser3.Position     = new Vector2(2120, 420);
         laser3.BeamLength   = 160f;
         laser3.IsHorizontal = true;
+        laser3.EndpointScale = 2.0f;
+        laser3.BeamThicknessScale = 1.35f;
         laser3.AlwaysOn     = false;
-        laser3.OnDuration   = 1.4f;
-        laser3.OffDuration  = 1.0f;
+        laser3.OnDuration   = 1.8f;
+        laser3.OffDuration  = 1.3f;
         laser3.Player       = player;
 
         int[]   miniFloorSpikeX = { 2060, 2100, 2140 };
@@ -261,11 +294,13 @@ class MainScene : Scene
         for (int i = 0; i < miniFloorSpikeX.Length; i++)
         {
             var s = base.AddGameObject<SpikeTrap>($"spike_mini_floor_{i}");
-            s.Position    = new Vector2(miniFloorSpikeX[i], 450);
-            s.Origin      = SpikeOrigin.Floor;
-            s.SpikeLength = 40f;
-            s.PhaseOffset = miniFloorPhase[i];
-            s.Player      = player;
+            s.Position          = new Vector2(miniFloorSpikeX[i], 450);
+            s.Origin            = SpikeOrigin.Floor;
+            s.SpikeLength       = 40f;
+            s.PhaseOffset       = miniFloorPhase[i];
+            s.SpriteTextureName = "Traps/Spike/Spike";
+            s.SpriteTint        = Color.White;
+            s.Player            = player;
         }
     }
 }
