@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 
-namespace ComputerGameFinal.Engine.Utils;
+namespace WaddleAndGrapple.Engine.Utils;
 
 /// <summary>
 /// Static helpers for working with rotations stored as Vector3 Euler angles (radians)

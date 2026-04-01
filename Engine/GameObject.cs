@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using ComputerGameFinal.Engine.Components;
-using ComputerGameFinal.Engine.Components.Physics;
+using WaddleAndGrapple.Engine.Components;
+using WaddleAndGrapple.Engine.Components.Physics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ComputerGameFinal.Engine;
+namespace WaddleAndGrapple.Engine;
 
 public class GameObject
 {

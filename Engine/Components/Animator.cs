@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
-namespace ComputerGameFinal.Engine.Components;
+namespace WaddleAndGrapple.Engine.Components;
 
 public class Animator : Component
 {
@@ -24,6 +24,14 @@ public class Animator : Component
             _currentAnimation = animation;
             _currentAnimation.Reset();
             _currentName = name;
+        }
+    }
+
+    public override void Initialize()
+    {
+        if (!GameObject.HasComponent<SpriteRenderer>())
+        {
+            GameObject.AddComponent<SpriteRenderer>();
         }
     }
 

@@ -1,9 +1,9 @@
-using ComputerGameFinal.Engine.Components;
-using ComputerGameFinal.Engine.Managers;
+using WaddleAndGrapple.Engine.Components;
+using WaddleAndGrapple.Engine.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ComputerGameFinal.Game;
+namespace WaddleAndGrapple.Game;
 
 /// <summary>
 /// วาด laser 3 ส่วน: head (เหลือง) + beam (ม่วง) + tail (ส้ม)

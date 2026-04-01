@@ -1,13 +1,13 @@
 using Microsoft.Xna.Framework;
-using ComputerGameFinal.Engine;
-using ComputerGameFinal.Engine.Managers;
+using WaddleAndGrapple.Engine;
+using WaddleAndGrapple.Engine.Managers;
 using System;
 using MonoGameGum;
 using Gum.Forms.Controls;
 using MonoGameGum.GueDeriving;
-using ComputerGameFinal.Engine.Components;
+using WaddleAndGrapple.Engine.Components;
 
-namespace ComputerGameFinal.Game.Scenes;
+namespace WaddleAndGrapple.Game.Scenes;
 
 public class MainMenu : Scene
 {

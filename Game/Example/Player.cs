@@ -1,35 +1,38 @@
 using System;
-using ComputerGameFinal.Engine;
-using ComputerGameFinal.Engine.Components;
-using ComputerGameFinal.Engine.Components.Physics;
-using ComputerGameFinal.Engine.Managers;
-using ComputerGameFinal.Engine.Utils;
+using WaddleAndGrapple.Engine;
+using WaddleAndGrapple.Engine.Components;
+using WaddleAndGrapple.Engine.Components.Physics;
+using WaddleAndGrapple.Engine.Managers;
+using WaddleAndGrapple.Engine.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace ComputerGameFinal.Game.Example;
+namespace WaddleAndGrapple.Game.Example;
 
 public class Player : GameObject
 {
     private const float MoveSpeed = 300f;
 
-    private SpriteRenderer _spriteRenderer;
     private Animator _animator;
 
     private Rigidbody2D _rigidbody;
+
+    private SpriteRenderer _spriteRenderer;
 
     public override void Initialize()
     {
         _spriteRenderer = AddComponent<SpriteRenderer>();
 
         AnimationFactory factory = new AnimationFactory(
-            ResourceManager.Instance.GetTexture("mario_walk"), 1, 3
+            ResourceManager.Instance.GetTexture("elephant-animation"),
+            rows: 8,
+            columns: 8
         );
         
-        Animation idle = factory.CreateFromCell(row: 0, col: 2, totalFrames: 1, frameDuration: 0.1f);
-        Animation walk = factory.CreateFromRow(row: 0, totalFrames: 3, frameDuration: 0.1f);
+        Animation idle = factory.CreateFromRow(row: 0, totalFrames: 1, frameDuration: .05f);
+        Animation walk = factory.CreateFromRow(row: 2, totalFrames: 8, frameDuration: .05f);
 
-        Scale = new Vector2(.4f, .4f);
+        Scale = new Vector2(1.5f, 1.5f);
 
         _rigidbody = AddComponent<Rigidbody2D>();
         _rigidbody.GravityScale = 0f;

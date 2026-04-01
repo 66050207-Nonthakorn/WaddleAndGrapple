@@ -1,8 +1,8 @@
-using ComputerGameFinal.Engine;
-using ComputerGameFinal.Engine.Components;
+using WaddleAndGrapple.Engine;
+using WaddleAndGrapple.Engine.Components;
 using Microsoft.Xna.Framework;
 
-namespace ComputerGameFinal.Game;
+namespace WaddleAndGrapple.Game;
 
 /// <summary>
 /// Abstract base class for all traps in the game.

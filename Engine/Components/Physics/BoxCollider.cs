@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 
-namespace ComputerGameFinal.Engine.Components.Physics;
+namespace WaddleAndGrapple.Engine.Components.Physics;
 
 public class BoxCollider : Collider
 {

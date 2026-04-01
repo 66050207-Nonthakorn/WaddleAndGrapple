@@ -1,23 +1,44 @@
-using System.Collections.Generic;
-using ComputerGameFinal.Engine;
-using ComputerGameFinal.Engine.Components;
-using ComputerGameFinal.Engine.Managers;
-using ComputerGameFinal.Game;
+using WaddleAndGrapple.Engine;
+using WaddleAndGrapple.Engine.Components;
+using WaddleAndGrapple.Engine.Components.Tile;
+using WaddleAndGrapple.Engine.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using GamePlayer = ComputerGameFinal.Game.Player;
 using MonoGameGum;
+using System.Collections.Generic;
+using GamePlayer = WaddleAndGrapple.Game.Player;
 
-namespace ComputerGameFinal.Game.Example;
+namespace WaddleAndGrapple.Game.Example;
 
 class MainScene : Scene
 {
     GamePlayer player;
     GameObject cameraObject;
+    GameObject tilemapObject;
 
     public override void Setup()
     {
-        // Camera
+        // Create tilemap first
+        tilemapObject = base.AddGameObject<GameObject>("tilemap");
+        var tilemap = tilemapObject.AddComponent<Tilemap>();
+        tilemap.Tileset = ResourceManager.Instance.GetTexture("Tiles/tileset");
+        tilemap.SourceTileSize = 75;
+        tilemap.DestinationTileSize = 75;
+        tilemap.Layer = 0.5f;
+        tilemap.MapData = new int[,]
+        {
+            { 1, 1, 1, 1, -1, -1 },
+            { 5, 4, 3, 2, 1, 0 },
+            { 1, 1, 1, 1, 1, 1 },
+            { 1, 2, 3, 4, 5, 6 }
+        };
+
+        tilemap.GameObject.Scale = new Vector2(1f, 1f);
+
+        var tileCollider = tilemapObject.AddComponent<TileCollider>();
+        tileCollider.SetSolid(0, 1, 2, 3, 4, 5);
+
+        // Create camera
         cameraObject = base.AddGameObject<GameObject>("camera");
         var camera = cameraObject.AddComponent<Camera2D>();
         camera.SetViewport(new Viewport(
@@ -28,6 +49,7 @@ class MainScene : Scene
         ));
         camera.Zoom = 1f;
         camera.SmoothFollow = false;
+
         base.Camera = camera;
 
         // Player
@@ -49,7 +71,6 @@ class MainScene : Scene
         }
 
         // ── Platforms ─────────────────────────────────────────────────────────
-        // (name, x, y, w, h)
         var platformDefs = new (string n, int x, int y, int w, int h)[]
         {
             ("platform_350",  350, 300, 200, 30),  // zone 1: กลาง
@@ -83,7 +104,7 @@ class MainScene : Scene
             new(2200, 340,  180,  24),  // mini-map platform C
         };
         player.SetSolids(solids);
-        player.SetSpawnPoint(startSpawn); // level-start fallback
+        player.SetSpawnPoint(startSpawn);
 
         // ── Sections / Checkpoints ────────────────────────────────────────────
         CheckpointManager.Instance.Reset();
@@ -103,7 +124,6 @@ class MainScene : Scene
         spawnMarkerSr.Tint       = new Color(60, 180, 120);
         spawnMarkerSr.LayerDepth = 0.4f;
 
-        // Visual markers at section boundaries (blue poles)
         foreach (var (name, x) in new[] { ("cp_marker_1", 900f), ("cp_marker_2", 1400f), ("cp_marker_3", 1900f) })
         {
             var marker      = base.AddGameObject<GameObject>(name);
@@ -117,11 +137,9 @@ class MainScene : Scene
 
         camera.FollowTarget = player;
 
-        // ═════════════════════════════════════════════════════════════════════
-        // ZONE 1 — Saw Traps  (x = 0–900, original area)
-        // ═════════════════════════════════════════════════════════════════════
-
-        // Saw บนพื้น: เดินซ้าย-ขวา x=320–520 (เว้นพื้นที่ปลอดภัยให้จุด spawn)
+        // ═══════════════════════════════════════════════════════════════════
+        // ZONE 1 — Saw Traps
+        // ═══════════════════════════════════════════════════════════════════
         var saw1 = base.AddGameObject<SawTrap>("saw1");
         saw1.Position       = new Vector2(320, 420);
         saw1.MoveRange      = 200f;
@@ -129,7 +147,6 @@ class MainScene : Scene
         saw1.MoveHorizontal = true;
         saw1.Player         = player;
 
-        // Saw บน platform กลาง: x=360–510
         var saw2 = base.AddGameObject<SawTrap>("saw2");
         saw2.Position       = new Vector2(360, 270);
         saw2.MoveRange      = 150f;
@@ -137,11 +154,9 @@ class MainScene : Scene
         saw2.MoveHorizontal = true;
         saw2.Player         = player;
 
-        // ═════════════════════════════════════════════════════════════════════
-        // ZONE 2 — Laser Traps  (x = 0–900, original area)
-        // ═════════════════════════════════════════════════════════════════════
-
-        // Laser ค้างตลอด — แนวนอน x=450–650
+        // ═══════════════════════════════════════════════════════════════════
+        // ZONE 2 — Laser Traps
+        // ═══════════════════════════════════════════════════════════════════
         var laser1 = base.AddGameObject<LaserTrap>("laser_always");
         laser1.Position     = new Vector2(450, 406);
         laser1.BeamLength   = 200f;
@@ -149,7 +164,6 @@ class MainScene : Scene
         laser1.AlwaysOn     = true;
         laser1.Player       = player;
 
-        // Laser เปิด-ปิด (2s/1.5s) — แนวตั้ง x=320, y=300–450
         var laser2 = base.AddGameObject<LaserTrap>("laser_timed");
         laser2.Position     = new Vector2(320, 300);
         laser2.BeamLength   = 150f;
@@ -159,13 +173,11 @@ class MainScene : Scene
         laser2.OffDuration  = 1.5f;
         laser2.Player       = player;
 
-        // ═════════════════════════════════════════════════════════════════════
-        // ZONE 3 — Floor Spikes  (x = 920–1060)
-        // ผุดขึ้นจากพื้นสลับ phase ให้ต้องวิ่งหลบ
-        // ═════════════════════════════════════════════════════════════════════
-
-        int[]   floorSpikeX   = { 920, 960, 1000, 1040 };
-        float[] floorPhase    = { 0f, 0.5f, 1.0f, 1.5f };
+        // ═══════════════════════════════════════════════════════════════════
+        // ZONE 3 — Floor Spikes
+        // ═══════════════════════════════════════════════════════════════════
+        int[]   floorSpikeX = { 920, 960, 1000, 1040 };
+        float[] floorPhase  = { 0f, 0.5f, 1.0f, 1.5f };
         for (int i = 0; i < 4; i++)
         {
             var s = base.AddGameObject<SpikeTrap>($"spike_floor_{i}");
@@ -176,29 +188,24 @@ class MainScene : Scene
             s.Player      = player;
         }
 
-        // ═════════════════════════════════════════════════════════════════════
-        // ZONE 4 — Ceiling Spikes  (x = 1070–1250, ห้อยลงใต้ platform)
-        // ═════════════════════════════════════════════════════════════════════
-
-        // platform_1070 อยู่ที่ y=360, ความสูง 20 → bottom = y=380
-        int[]   ceilSpikeX  = { 1085, 1130, 1175 };
-        float[] ceilPhase   = { 0f, 0.6f, 1.2f };
+        // ═══════════════════════════════════════════════════════════════════
+        // ZONE 4 — Ceiling Spikes
+        // ═══════════════════════════════════════════════════════════════════
+        int[]   ceilSpikeX = { 1085, 1130, 1175 };
+        float[] ceilPhase  = { 0f, 0.6f, 1.2f };
         for (int i = 0; i < 3; i++)
         {
             var s = base.AddGameObject<SpikeTrap>($"spike_ceil_{i}");
-            s.Position    = new Vector2(ceilSpikeX[i], 380); // BaseY = platform bottom
+            s.Position    = new Vector2(ceilSpikeX[i], 380);
             s.Origin      = SpikeOrigin.Ceiling;
             s.SpikeLength = 45f;
             s.PhaseOffset = ceilPhase[i];
             s.Player      = player;
         }
 
-        // ═════════════════════════════════════════════════════════════════════
-        // ZONE 5 — Wall Spikes  (x = 1540–1680, ช่องทางแคบ)
-        // หนามสลับสองข้าง ผู้เล่นต้องรอจังหวะผ่าน
-        // ═════════════════════════════════════════════════════════════════════
-
-        // ซ้าย: ยื่นขวาจาก x=1540 → ถึง x=1595 เมื่อ extend เต็ม
+        // ═══════════════════════════════════════════════════════════════════
+        // ZONE 5 — Wall Spikes
+        // ═══════════════════════════════════════════════════════════════════
         var spikeWallL = base.AddGameObject<SpikeTrap>("spike_wall_left");
         spikeWallL.Position    = new Vector2(1540, 405);
         spikeWallL.Origin      = SpikeOrigin.LeftWall;
@@ -206,8 +213,6 @@ class MainScene : Scene
         spikeWallL.PhaseOffset = 0f;
         spikeWallL.Player      = player;
 
-        // ขวา: ยื่นซ้ายจาก x=1680 → ถึง x=1625 เมื่อ extend เต็ม (gap 30px)
-        // phase ต่างกัน 0.75s → สลับกันเพื่อให้มีหน้าต่างผ่าน
         var spikeWallR = base.AddGameObject<SpikeTrap>("spike_wall_right");
         spikeWallR.Position    = new Vector2(1680, 405);
         spikeWallR.Origin      = SpikeOrigin.RightWall;
@@ -215,10 +220,9 @@ class MainScene : Scene
         spikeWallR.PhaseOffset = 0.75f;
         spikeWallR.Player      = player;
 
-        // ═════════════════════════════════════════════════════════════════════
-        // ZONE 6 — Final Floor Spikes  (x = 1740–1780)
-        // ═════════════════════════════════════════════════════════════════════
-
+        // ═══════════════════════════════════════════════════════════════════
+        // ZONE 6 — Final Floor Spikes
+        // ═══════════════════════════════════════════════════════════════════
         var spikeFinalA = base.AddGameObject<SpikeTrap>("spike_final_a");
         spikeFinalA.Position    = new Vector2(1740, 450);
         spikeFinalA.Origin      = SpikeOrigin.Floor;
@@ -233,11 +237,9 @@ class MainScene : Scene
         spikeFinalB.PhaseOffset = 0.7f;
         spikeFinalB.Player      = player;
 
-        // ═════════════════════════════════════════════════════════════════════
-        // ZONE 7 — Mini Demo Map  (x = 1820–2380)
-        // โซนย่อยเพิ่มพื้นที่ demo ให้มีทั้งพื้น, platform และกับดักผสม
-        // ═════════════════════════════════════════════════════════════════════
-
+        // ═══════════════════════════════════════════════════════════════════
+        // ZONE 7 — Mini Demo Map
+        // ═══════════════════════════════════════════════════════════════════
         var saw3 = base.AddGameObject<SawTrap>("saw_mini_1");
         saw3.Position       = new Vector2(2030, 230);
         saw3.MoveRange      = 120f;
