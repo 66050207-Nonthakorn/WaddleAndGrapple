@@ -6,12 +6,14 @@ using MonoGameGum;
 using Gum.Forms.Controls;
 using MonoGameGum.GueDeriving;
 using WaddleAndGrapple.Engine.Components;
+using Gum.Managers;
 
 namespace WaddleAndGrapple.Game.Scenes;
 
 public class MainMenu : Scene
 {
     private Panel _buttonPanel;
+    private Panel _optionsPanel;
 
     public override void Setup()
     {
@@ -34,6 +36,8 @@ public class MainMenu : Scene
         }
 
         CreateButtonsPanel();
+        _optionsPanel = new OptionPanel(_buttonPanel);
+        _optionsPanel.AddToRoot();
     }
 
     private void CreateButtonsPanel()
@@ -49,45 +53,45 @@ public class MainMenu : Scene
         startButton.Y = 80;
         startButton.Width = 240;
         startButton.Height = 30;
-        startButton.Text = "Start Game";
+        startButton.Text = "START GAME";
         startButton.Click += OnStartGameClick;
         _buttonPanel.AddChild(startButton);
 
-        var settingsButton = new Button();
-        settingsButton.Anchor(Gum.Wireframe.Anchor.Center);
-        settingsButton.Y = 150;
-        settingsButton.Width = 240;
-        settingsButton.Height = 30;
-        settingsButton.Text = "Settings";
-        settingsButton.Click += OnSettingsClick;
-        _buttonPanel.AddChild(settingsButton);
+       Button optionButton = new Button();
+       optionButton.Anchor(Gum.Wireframe.Anchor.Center);
+       optionButton.Y = 150;
+       optionButton.Width = 240;
+       optionButton.Height = 30;
+       optionButton.Text = "SETTINGS";
+       optionButton.Click += OnSettingsClick;
+        _buttonPanel.AddChild(optionButton);
 
         var quitButton = new Button();
         quitButton.Anchor(Gum.Wireframe.Anchor.Center);
         quitButton.Y = 220;
         quitButton.Width = 240;
         quitButton.Height = 30;
-        quitButton.Text = "Quit Game";
+        quitButton.Text = "QUIT GAME";
         quitButton.Click += OnQuitGameClick;
         _buttonPanel.AddChild(quitButton);
     }
 
-    private void OnStartGameClick(object sender, EventArgs e)
+    public void OnStartGameClick(object sender, EventArgs e)
     {
-        // Create a fresh GameScene instance each time
+        // Create a fresh LevelSelect instance each time
         GumService.Default.Root.Children.Clear(); // Clear Gum UI elements from the main menu
-        SceneManager.Instance.LoadScene("GameScene");
+        SceneManager.Instance.AddScene<LevelSelect>("LevelSelect");
+        SceneManager.Instance.LoadScene("LevelSelect");
     }
 
-    private void OnSettingsClick(object sender, EventArgs e)
+    public void OnSettingsClick(object sender, EventArgs e)
     {
         // // Open settings as an overlay
-        // AudioManager.Instance.PlaySound("Button_Click");
-        // SceneManager.Instance.PushOverlay(new SettingsScene());
-        Console.WriteLine("Settings button clicked - functionality not implemented yet.");
+        _buttonPanel.IsVisible = false;
+        _optionsPanel.IsVisible = true;
     }
 
-    private void OnQuitGameClick(object sender, EventArgs e)
+    public void OnQuitGameClick(object sender, EventArgs e)
     {
         // // Exit the game
         // AudioManager.Instance.PlaySound("Button_Click");

@@ -29,6 +29,8 @@ public class Game1 : Microsoft.Xna.Framework.Game
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
+        Window.AllowUserResizing = true;
+        Window.ClientSizeChanged += OnClientSizeChanged;
         IsMouseVisible = true;
     }
 
@@ -48,8 +50,15 @@ public class Game1 : Microsoft.Xna.Framework.Game
 
         // Set up scenes
         SceneManager.Instance.AddScene<MainMenu>("main");
-        SceneManager.Instance.AddScene<MainScene>("GameScene");
-        SceneManager.Instance.AddScene<CollisionDemoScene>("collision_demo");
+        SceneManager.Instance.AddScene<LevelSelect>("levelSelect");
+        SceneManager.Instance.AddScene<Level1>("Level1");
+        SceneManager.Instance.AddScene<Level2>("Level2");
+        SceneManager.Instance.AddScene<Level3>("Level3");
+        SceneManager.Instance.AddScene<Level1IntroCutscene>(Level1IntroCutscene.SceneName);
+        SceneManager.Instance.AddScene<Level2IntroCutscene>(Level2IntroCutscene.SceneName);
+        SceneManager.Instance.AddScene<Level3IntroCutscene>(Level3IntroCutscene.SceneName);
+        SceneManager.Instance.AddScene<Level3OutroCutscene>(Level3OutroCutscene.SceneName);
+        SceneManager.Instance.AddScene<LevelComplete>("levelcomplete");
         
         base.Initialize();
     }
@@ -124,9 +133,13 @@ public class Game1 : Microsoft.Xna.Framework.Game
 
         _renderDestination.X = (size.X - _renderDestination.Width) / 2;
         _renderDestination.Y = (size.Y - _renderDestination.Height) / 2;
+        ScreenManager.Instance.SetRenderDestination(_renderDestination);
 
-        ScreenManager.Instance.previousWidth = size.X;
-        ScreenManager.Instance.previousHeight = size.Y;
+        if (!ScreenManager.Instance.isFullScreen)
+        {
+            ScreenManager.Instance.previousWidth = size.X;
+            ScreenManager.Instance.previousHeight = size.Y;
+        }
 
         GumUI.Cursor.TransformMatrix = Matrix.CreateTranslation(-_renderDestination.X, -_renderDestination.Y, 0) * Matrix.CreateScale(1f / scale);
     }
@@ -147,7 +160,6 @@ public class Game1 : Microsoft.Xna.Framework.Game
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.Black);
         GraphicsDevice.Clear(Color.Black);
         
         var currentScene = SceneManager.Instance.CurrentScene;

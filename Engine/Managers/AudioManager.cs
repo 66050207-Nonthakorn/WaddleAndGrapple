@@ -9,16 +9,26 @@ public class AudioManager
 {
     public static AudioManager Instance { get; private set; } = new AudioManager();
     
-    public static float Volume
+    public static float SongVolume 
     {
         get => MediaPlayer.Volume;
         set => MediaPlayer.Volume = Math.Clamp(value, 0f, 1f);
+    }
+
+    public static float SFXVolume
+    {
+        get => SoundEffect.MasterVolume;
+        set => SoundEffect.MasterVolume = Math.Clamp(value, 0f, 1f);
     }
     
     private readonly Dictionary<string, SoundEffect> _soundsEffects = [];
     private readonly Dictionary<string, Song> _songs = [];
     
-    private AudioManager() { }
+    private AudioManager()
+    {
+        SongVolume = 0.7f; // Default volume
+        SFXVolume = 0.7f;  // Default volume
+    }
 
     public void LoadSound(string name, SoundEffect sound)
     {

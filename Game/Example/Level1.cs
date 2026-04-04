@@ -28,7 +28,7 @@ namespace WaddleAndGrapple.Game.Example;
 /// กระโดดสูงสุด: ~126px (JumpForce 550 / Gravity 1200)
 /// ยืนบนพื้น (floor y=450): player center y=420
 /// </summary>
-class MainScene : Scene
+class Level1 : Scene
 {
     GamePlayer player;
     GameObject cameraObject;
