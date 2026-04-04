@@ -5,6 +5,7 @@ using WaddleAndGrapple.Engine.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameGum;
+using System;
 using System.Collections.Generic;
 using GamePlayer = WaddleAndGrapple.Game.Player;
 
@@ -141,11 +142,11 @@ class MainScene : Scene
         // ZONE 1 — Saw Traps
         // ═══════════════════════════════════════════════════════════════════
         var saw1 = base.AddGameObject<SawTrap>("saw1");
-        saw1.Position          = new Vector2(320, 420);
+        saw1.Position          = new Vector2(320, 450);  // Y = floor surface (FloorMounted)
         saw1.MoveRange         = 200f;
         saw1.MoveSpeed         = 100f;
         saw1.MoveHorizontal    = true;
-        saw1.BladeSize         = 50f;
+        saw1.Size              = SawSize.Large;
         saw1.SpriteTextureName = "Traps/Saw/LargeSaw";
         saw1.SpriteTint        = Color.White;
         saw1.Placement         = SawPlacement.FloorMounted;
@@ -156,10 +157,10 @@ class MainScene : Scene
         saw2.MoveRange         = 150f;
         saw2.MoveSpeed         = 120f;
         saw2.MoveHorizontal    = true;
-        saw2.BladeSize         = 40f;
-        saw2.SpriteTextureName = "Traps/Saw/MediumSaw";
+        saw2.Size              = SawSize.Small;
+        saw2.SpriteTextureName = "Traps/Saw/SmallSaw";
         saw2.SpriteTint        = Color.White;
-        saw2.Placement         = SawPlacement.Floating;
+        saw2.Placement         = SawPlacement.Full;
         saw2.Player            = player;
 
         // ═══════════════════════════════════════════════════════════════════
@@ -196,8 +197,8 @@ class MainScene : Scene
         {
             var s = base.AddGameObject<SpikeTrap>($"spike_floor_{i}");
             s.Position          = new Vector2(floorSpikeX[i], 450);
-            s.Origin            = SpikeOrigin.Floor;
-            s.SpikeLength       = 45f;
+            s.RotationAngle     = 0f;
+            s.SpikeTiles        = 3;
             s.PhaseOffset       = floorPhase[i];
             s.SpriteTextureName = "Traps/Spike/Spike";
             s.SpriteTint        = Color.White;
@@ -213,8 +214,8 @@ class MainScene : Scene
         {
             var s = base.AddGameObject<SpikeTrap>($"spike_ceil_{i}");
             s.Position          = new Vector2(ceilSpikeX[i], 380);
-            s.Origin            = SpikeOrigin.Ceiling;
-            s.SpikeLength       = 45f;
+            s.RotationAngle     = MathF.PI;
+            s.SpikeTiles        = 3;
             s.PhaseOffset       = ceilPhase[i];
             s.SpriteTextureName = "Traps/Spike/Spike";
             s.SpriteTint        = Color.White;
@@ -226,8 +227,8 @@ class MainScene : Scene
         // ═══════════════════════════════════════════════════════════════════
         var spikeWallL = base.AddGameObject<SpikeTrap>("spike_wall_left");
         spikeWallL.Position          = new Vector2(1540, 405);
-        spikeWallL.Origin            = SpikeOrigin.LeftWall;
-        spikeWallL.SpikeLength       = 55f;
+        spikeWallL.RotationAngle     = MathF.PI / 2f;
+        spikeWallL.SpikeTiles        = 3;
         spikeWallL.PhaseOffset       = 0f;
         spikeWallL.SpriteTextureName = "Traps/Spike/Spike";
         spikeWallL.SpriteTint        = Color.White;
@@ -235,8 +236,8 @@ class MainScene : Scene
 
         var spikeWallR = base.AddGameObject<SpikeTrap>("spike_wall_right");
         spikeWallR.Position          = new Vector2(1680, 405);
-        spikeWallR.Origin            = SpikeOrigin.RightWall;
-        spikeWallR.SpikeLength       = 55f;
+        spikeWallR.RotationAngle     = -MathF.PI / 2f;
+        spikeWallR.SpikeTiles        = 3;
         spikeWallR.PhaseOffset       = 0.75f;
         spikeWallR.SpriteTextureName = "Traps/Spike/Spike";
         spikeWallR.SpriteTint        = Color.White;
@@ -247,8 +248,8 @@ class MainScene : Scene
         // ═══════════════════════════════════════════════════════════════════
         var spikeFinalA = base.AddGameObject<SpikeTrap>("spike_final_a");
         spikeFinalA.Position          = new Vector2(1740, 450);
-        spikeFinalA.Origin            = SpikeOrigin.Floor;
-        spikeFinalA.SpikeLength       = 45f;
+        spikeFinalA.RotationAngle     = 0f;
+        spikeFinalA.SpikeTiles        = 3;
         spikeFinalA.PhaseOffset       = 0f;
         spikeFinalA.SpriteTextureName = "Traps/Spike/Spike";
         spikeFinalA.SpriteTint        = Color.White;
@@ -256,8 +257,8 @@ class MainScene : Scene
 
         var spikeFinalB = base.AddGameObject<SpikeTrap>("spike_final_b");
         spikeFinalB.Position          = new Vector2(1775, 450);
-        spikeFinalB.Origin            = SpikeOrigin.Floor;
-        spikeFinalB.SpikeLength       = 45f;
+        spikeFinalB.RotationAngle     = 0f;
+        spikeFinalB.SpikeTiles        = 3;
         spikeFinalB.PhaseOffset       = 0.7f;
         spikeFinalB.SpriteTextureName = "Traps/Spike/Spike";
         spikeFinalB.SpriteTint        = Color.White;
@@ -271,10 +272,10 @@ class MainScene : Scene
         saw3.MoveRange         = 120f;
         saw3.MoveSpeed         = 110f;
         saw3.MoveHorizontal    = true;
-        saw3.BladeSize         = 40f;
+        saw3.Size              = SawSize.Medium;
         saw3.SpriteTextureName = "Traps/Saw/MediumSaw";
         saw3.SpriteTint        = Color.White;
-        saw3.Placement         = SawPlacement.Floating;
+        saw3.Placement         = SawPlacement.Full;
         saw3.AnimationColumns  = 4;
         saw3.Player            = player;
 
@@ -295,8 +296,8 @@ class MainScene : Scene
         {
             var s = base.AddGameObject<SpikeTrap>($"spike_mini_floor_{i}");
             s.Position          = new Vector2(miniFloorSpikeX[i], 450);
-            s.Origin            = SpikeOrigin.Floor;
-            s.SpikeLength       = 40f;
+            s.RotationAngle     = 0f;
+            s.SpikeTiles        = 3;
             s.PhaseOffset       = miniFloorPhase[i];
             s.SpriteTextureName = "Traps/Spike/Spike";
             s.SpriteTint        = Color.White;
