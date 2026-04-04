@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using GamePlayer = WaddleAndGrapple.Game.Player;
+using GameEnemy = WaddleAndGrapple.Game.Enemy;
 
 namespace WaddleAndGrapple.Game.Example;
 
@@ -30,6 +31,7 @@ class MainScene : Scene
 {
     GamePlayer player;
     GameObject cameraObject;
+    GameEnemy enemy;
 
     static readonly Color ColFloorA   = new(50,  70, 110);
     static readonly Color ColFloorB   = new(35,  50,  85);
@@ -61,6 +63,12 @@ class MainScene : Scene
         player.Position = startSpawn;
         player.SetSpawnPoint(startSpawn);
 
+        // ── Enemy ────────────────────────────────────────────────────────────
+        enemy = base.AddGameObject<GameEnemy>("enemy");
+        var startSpawn1 = new Vector2(1700, 380);
+        enemy.Position = startSpawn1;
+        enemy.SetPlayer(player);
+
         // ══════════════════════════════════════════════════════════════════════
         // SOLIDS
         // ══════════════════════════════════════════════════════════════════════
@@ -90,6 +98,7 @@ class MainScene : Scene
             new(2195, 285, 265, 20),     // plat_d2 — chain จาก d1 (rise 75px)
         };
         player.SetSolids(solids);
+        enemy.SetSolids(solids);
 
         // ══════════════════════════════════════════════════════════════════════
         // VISUALS — พื้น (tile 150px)
