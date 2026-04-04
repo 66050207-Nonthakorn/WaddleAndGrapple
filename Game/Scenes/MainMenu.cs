@@ -1,13 +1,14 @@
 using Microsoft.Xna.Framework;
-using ComputerGameFinal.Engine;
-using ComputerGameFinal.Engine.Managers;
+using WaddleAndGrapple.Engine;
+using WaddleAndGrapple.Engine.Managers;
 using System;
 using MonoGameGum;
 using Gum.Forms.Controls;
 using MonoGameGum.GueDeriving;
-using ComputerGameFinal.Engine.Components;
+using WaddleAndGrapple.Engine.Components;
+using Gum.Managers;
 
-namespace ComputerGameFinal.Game.Scenes;
+namespace WaddleAndGrapple.Game.Scenes;
 
 public class MainMenu : Scene
 {
@@ -75,7 +76,7 @@ public class MainMenu : Scene
         _buttonPanel.AddChild(quitButton);
     }
 
-    private void OnStartGameClick(object sender, EventArgs e)
+    public void OnStartGameClick(object sender, EventArgs e)
     {
         // Create a fresh LevelSelect instance each time
         GumService.Default.Root.Children.Clear(); // Clear Gum UI elements from the main menu
@@ -83,14 +84,14 @@ public class MainMenu : Scene
         SceneManager.Instance.LoadScene("LevelSelect");
     }
 
-    private void OnSettingsClick(object sender, EventArgs e)
+    public void OnSettingsClick(object sender, EventArgs e)
     {
         // // Open settings as an overlay
         _buttonPanel.IsVisible = false;
         _optionsPanel.IsVisible = true;
     }
 
-    private void OnQuitGameClick(object sender, EventArgs e)
+    public void OnQuitGameClick(object sender, EventArgs e)
     {
         // // Exit the game
         // AudioManager.Instance.PlaySound("Button_Click");

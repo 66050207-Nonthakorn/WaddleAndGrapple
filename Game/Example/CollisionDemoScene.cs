@@ -1,12 +1,12 @@
 using System;
-using ComputerGameFinal.Engine;
-using ComputerGameFinal.Engine.Components;
-using ComputerGameFinal.Engine.Components.Physics;
-using ComputerGameFinal.Engine.Managers;
+using WaddleAndGrapple.Engine;
+using WaddleAndGrapple.Engine.Components;
+using WaddleAndGrapple.Engine.Components.Physics;
+using WaddleAndGrapple.Engine.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace ComputerGameFinal.Game.Example;
+namespace WaddleAndGrapple.Game.Example;
 
 /// <summary>
 /// Minimal scene that visually and textually confirms every collision callback fires.

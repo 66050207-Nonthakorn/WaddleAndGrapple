@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace ComputerGameFinal.Engine.Components;
+namespace WaddleAndGrapple.Engine.Components;
 
 public class AnimationFactory(Texture2D sheet, int rows, int columns)
 {

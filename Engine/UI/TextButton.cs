@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 
-namespace ComputerGameFinal.Engine.UI;
+namespace WaddleAndGrapple.Engine.UI;
 
 public class TextButton : GameObject
 {

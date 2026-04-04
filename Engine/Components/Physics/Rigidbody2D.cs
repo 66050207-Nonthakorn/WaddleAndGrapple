@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 
-namespace ComputerGameFinal.Engine.Components.Physics;
+namespace WaddleAndGrapple.Engine.Components.Physics;
 
 /// <summary>
 /// Simple 2D rigid body. Handles velocity integration and gravity.

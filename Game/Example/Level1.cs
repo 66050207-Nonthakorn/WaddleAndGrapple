@@ -1,12 +1,12 @@
-using ComputerGameFinal.Engine;
-using ComputerGameFinal.Engine.Components;
-using ComputerGameFinal.Engine.Components.Tile;
-using ComputerGameFinal.Engine.Managers;
+using WaddleAndGrapple.Engine;
+using WaddleAndGrapple.Engine.Components;
+using WaddleAndGrapple.Engine.Components.Tile;
+using WaddleAndGrapple.Engine.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameGum;
 
-namespace ComputerGameFinal.Game.Example;
+namespace WaddleAndGrapple.Game.Example;
 
 class Level1 : BaseLevel
 {
@@ -26,12 +26,17 @@ class Level1 : BaseLevel
         var tilemap = tilemapObject.AddComponent<Tilemap>();
         tilemap.Tileset = ResourceManager.Instance.GetTexture("Tiles/tileset");
         tilemap.SourceTileSize = 75;
-        tilemap.DestinationTileSize = 150;
-        tilemap.GameObject.Scale = new Vector2(1f, 1f);
+        tilemap.DestinationTileSize = 75;
+        tilemap.Layer = 0.5f;
         tilemap.MapData = new int[,]
         {
             { 1, 1, 1, 1, 1, 1 },
         };
+
+        tilemap.GameObject.Scale = new Vector2(1f, 1f);
+
+        var tileCollider = tilemapObject.AddComponent<TileCollider>();
+        tileCollider.SetSolid(0, 1, 2, 3, 4, 5);
 
         // Create camera
         cameraObject = base.AddGameObject<GameObject>("camera");
@@ -43,7 +48,7 @@ class Level1 : BaseLevel
             ScreenManager.Instance.nativeHeight
         ));
         camera.Zoom = 1f;
-        camera.SmoothFollow = false;
+        // camera.SmoothFollow = true;
         // camera.FollowSpeed = 2f;
 
         base.Camera = camera;

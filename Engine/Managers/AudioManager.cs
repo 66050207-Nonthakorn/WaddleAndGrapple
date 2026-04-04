@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Media;
 
-namespace ComputerGameFinal.Engine.Managers;
+namespace WaddleAndGrapple.Engine.Managers;
 
 public class AudioManager
 {
