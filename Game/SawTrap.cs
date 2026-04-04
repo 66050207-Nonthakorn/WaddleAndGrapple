@@ -66,7 +66,7 @@ public class SawTrap : Trap
 
     protected override void OnUpdate(GameTime gameTime)
     {
-        float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        float dt = WorldTime.Dt((float)gameTime.ElapsedGameTime.TotalSeconds);
 
         if (MoveHorizontal)
         {
