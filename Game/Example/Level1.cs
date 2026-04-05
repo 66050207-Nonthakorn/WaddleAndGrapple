@@ -5,12 +5,13 @@ using WaddleAndGrapple.Engine.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameGum;
+using GamePlayer = WaddleAndGrapple.Game.Player;
 
 namespace WaddleAndGrapple.Game.Example;
 
 class Level1 : BaseLevel
 {
-    Player player;
+    GamePlayer player;
     GameObject cameraObject;
     
     GameObject tilemapObject;
@@ -53,9 +54,10 @@ class Level1 : BaseLevel
 
         base.Camera = camera;
         
-        player = base.AddGameObject<Player>("player");
+        player = base.AddGameObject<GamePlayer>("player");
         player.Position = new Vector2(100, 100);
         player.Scale = new Vector2(0.75f, 0.75f);
+        player.SetSolids(tileCollider.GetSolidRects());
         RegisterPlayerForProgression(player);
 
         camera.FollowTarget = player;
