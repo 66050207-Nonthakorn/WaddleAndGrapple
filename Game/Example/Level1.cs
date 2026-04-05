@@ -7,6 +7,7 @@ using MonoGameGum;
 using System;
 using System.Collections.Generic;
 using GamePlayer = WaddleAndGrapple.Game.Player;
+using GameEnemy  = WaddleAndGrapple.Game.Enemy;
 
 namespace WaddleAndGrapple.Game.Example;
 
@@ -60,6 +61,19 @@ class Level1 : BaseLevel
         player.SetSpawnPoint(startSpawn);
         RegisterPlayerForProgression(player);
 
+        // ── Enemies ───────────────────────────────────────────────────────────
+        var enemy1 = base.AddGameObject<GameEnemy>("enemy_1");
+        enemy1.Position = new Vector2(500, 420);
+        enemy1.SetPlayer(player);
+
+        var enemy2 = base.AddGameObject<GameEnemy>("enemy_2");
+        enemy2.Position = new Vector2(2600, 420);
+        enemy2.SetPlayer(player);
+
+        var enemy3 = base.AddGameObject<GameEnemy>("enemy_3");
+        enemy3.Position = new Vector2(3800, 420);
+        enemy3.SetPlayer(player);
+
         // ══════════════════════════════════════════════════════════════════════
         // SOLIDS
         // ══════════════════════════════════════════════════════════════════════
@@ -100,6 +114,9 @@ class Level1 : BaseLevel
             new(4510, 300, 250, 20),     // plat_f4 (near goal)
         };
         player.SetSolids(solids);
+        enemy1.SetSolids(solids);
+        enemy2.SetSolids(solids);
+        enemy3.SetSolids(solids);
 
         // ══════════════════════════════════════════════════════════════════════
         // VISUALS — floor tiles 150px
