@@ -308,7 +308,7 @@ public class Enemy : GameObject
         // เผชิญหน้ากับ player ก่อน attack
         FacingDirection = _player.Position.X > Position.X ? 1 : -1;
 
-        Die();
+        _player.Die();
     }
 
     private void HandleReturnToSpawn()

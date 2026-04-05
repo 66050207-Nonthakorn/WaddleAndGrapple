@@ -115,6 +115,11 @@ public class Player : GameObject
     private float           _respawnTimer;
     private List<Rectangle> _hazardRects = [];
 
+    // ── Active Spritesheet ────────────────────────────────────────────────────
+    private bool _speedSheetActive = false;
+    private bool _slowSheetActive  = false;
+    private string _lastSheet = "normal"; // "normal" | "speed" | "slow"
+
     // ── Phase 8: Checkpoints ──────────────────────────────────────────────────
     private List<CheckpointData> _checkpoints = [];
 
@@ -150,27 +155,7 @@ public class Player : GameObject
         //     5=Running,  6=GroundJumpStartup, 7=Jumping, 8=Freefall,
         //     9=LedgeGrab, 10=WallSlide, 11=WallJumpStartup,
         //    12=SlideStartEnd, 13=SlideLoop
-        var f = new AnimationFactory(
-            ResourceManager.Instance.GetTexture("Player/Player-SpriteSheet"),
-            rows: 15, columns: 9
-        );
-
-        _animator.AddAnimation("standing",       f.CreateFromRow(row:  0, totalFrames: 1, frameDuration: 0.083f));
-        _animator.AddAnimation("breathe",        f.CreateFromRow(row:  1, totalFrames: 7, frameDuration: 0.10f));
-        _animator.AddAnimation("walk",           f.CreateFromRow(row:  2, totalFrames: 9, frameDuration: 0.083f));
-        _animator.AddAnimation("crouch",         f.CreateFromRow(row:  3, totalFrames: 4, frameDuration: 0.083f, isLooping: false));
-        _animator.AddAnimation("crouchwalk",     f.CreateFromRow(row:  4, totalFrames: 6, frameDuration: 0.10f));
-        _animator.AddAnimation("run",            f.CreateFromRow(row:  5, totalFrames: 8, frameDuration: 0.083f));
-        _animator.AddAnimation("jumpstart",      f.CreateFromRow(row:  6, totalFrames: 1, frameDuration: 0.083f, isLooping: false));
-        _animator.AddAnimation("jump",           f.CreateFromRow(row:  7, totalFrames: 4, frameDuration: 0.083f, isLooping: false));
-        _animator.AddAnimation("freefall",       f.CreateFromRow(row:  8, totalFrames: 1, frameDuration: 0.083f));
-        _animator.AddAnimation("ledgegrab",      f.CreateFromRow(row:  9, totalFrames: 1, frameDuration: 0.083f));
-        _animator.AddAnimation("wallslide",      f.CreateFromRow(row: 10, totalFrames: 4, frameDuration: 0.083f));
-        _animator.AddAnimation("walljumpstart",  f.CreateFromRow(row: 11, totalFrames: 3, frameDuration: 0.083f, isLooping: false));
-        _animator.AddAnimation("slidestart",     f.CreateFromRow(row: 12, totalFrames: 4, frameDuration: 0.083f, isLooping: false));
-        _animator.AddAnimation("slide",          f.CreateFromRow(row: 13, totalFrames: 4, frameDuration: 0.083f));
-        _animator.AddAnimation("dead",           f.CreateFromRow(row: 14, totalFrames: DeadAnimTotalFrames, frameDuration: GoalAnimFrameDuration, isLooping: false));
-        _animator.AddAnimation("goal",           f.CreateFromRow(row: 14, totalFrames: GoalAnimTotalFrames, frameDuration: GoalAnimFrameDuration));
+        RegisterAnimations("Player/Player-SpriteSheet");
         _animator.Play("standing");
 
         _collider = AddComponent<PlayerBoxCollider>();
@@ -184,6 +169,73 @@ public class Player : GameObject
 
         AddComponent<PowerUpBarRenderer>();
         AddComponent<CoinHUD>();
+    }
+
+    // ── Spritesheet Helpers ───────────────────────────────────────────────────
+
+    private void RegisterAnimations(string sheetName)
+    {
+        var f = new AnimationFactory(
+            ResourceManager.Instance.GetTexture(sheetName),
+            rows: 15, columns: 9
+        );
+
+        _animator.AddAnimation("standing",      f.CreateFromRow(row:  0, totalFrames: 1, frameDuration: 0.083f));
+        _animator.AddAnimation("breathe",       f.CreateFromRow(row:  1, totalFrames: 7, frameDuration: 0.10f));
+        _animator.AddAnimation("walk",          f.CreateFromRow(row:  2, totalFrames: 9, frameDuration: 0.083f));
+        _animator.AddAnimation("crouch",        f.CreateFromRow(row:  3, totalFrames: 4, frameDuration: 0.083f, isLooping: false));
+        _animator.AddAnimation("crouchwalk",    f.CreateFromRow(row:  4, totalFrames: 6, frameDuration: 0.10f));
+        _animator.AddAnimation("run",           f.CreateFromRow(row:  5, totalFrames: 8, frameDuration: 0.083f));
+        _animator.AddAnimation("jumpstart",     f.CreateFromRow(row:  6, totalFrames: 1, frameDuration: 0.083f, isLooping: false));
+        _animator.AddAnimation("jump",          f.CreateFromRow(row:  7, totalFrames: 4, frameDuration: 0.083f, isLooping: false));
+        _animator.AddAnimation("freefall",      f.CreateFromRow(row:  8, totalFrames: 1, frameDuration: 0.083f));
+        _animator.AddAnimation("ledgegrab",     f.CreateFromRow(row:  9, totalFrames: 1, frameDuration: 0.083f));
+        _animator.AddAnimation("wallslide",     f.CreateFromRow(row: 10, totalFrames: 4, frameDuration: 0.083f));
+        _animator.AddAnimation("walljumpstart", f.CreateFromRow(row: 11, totalFrames: 3, frameDuration: 0.083f, isLooping: false));
+        _animator.AddAnimation("slidestart",    f.CreateFromRow(row: 12, totalFrames: 4, frameDuration: 0.083f, isLooping: false));
+        _animator.AddAnimation("slide",         f.CreateFromRow(row: 13, totalFrames: 4, frameDuration: 0.083f));
+        _animator.AddAnimation("dead",          f.CreateFromRow(row: 14, totalFrames: DeadAnimTotalFrames, frameDuration: GoalAnimFrameDuration, isLooping: false));
+        _animator.AddAnimation("goal",          f.CreateFromRow(row: 14, totalFrames: GoalAnimTotalFrames, frameDuration: GoalAnimFrameDuration));
+    }
+
+    /// <summary>เรียกจาก PowerUp.OnActivate — เปิดใช้ sheet ของไอเท็มนั้น</summary>
+    public void SetActiveSheet(string sheetName)
+    {
+        if (sheetName == "speed") _speedSheetActive = true;
+        if (sheetName == "slow")  _slowSheetActive  = true;
+        _lastSheet = sheetName; // บันทึกไอเท็มล่าสุดที่เก็บได้
+        ApplySheet();
+    }
+
+    /// <summary>เรียกจาก PowerUp.OnDeactivate — ปิด sheet ของไอเท็มนั้น และ fallback</summary>
+    public void ClearSheet(string sheetName)
+    {
+        if (sheetName == "speed") _speedSheetActive = false;
+        if (sheetName == "slow")  _slowSheetActive  = false;
+
+        // fallback: ใช้ sheet ของ effect ที่ยังเหลืออยู่ ถ้าไม่มีแล้วก็ normal
+        if (_slowSheetActive && sheetName == "speed")
+            _lastSheet = "slow";
+        else if (_speedSheetActive && sheetName == "slow")
+            _lastSheet = "speed";
+        else if (!_speedSheetActive && !_slowSheetActive)
+            _lastSheet = "normal";
+
+        ApplySheet();
+    }
+
+    private void ApplySheet()
+    {
+        string textureName = _lastSheet switch
+        {
+            "speed" => "Player/SpeedBoostPlayer-SpriteSheet",
+            "slow"  => "Player/SlowDownPlayer-SpriteSheet",
+            _       => "Player/Player-SpriteSheet",
+        };
+
+        string playingNow = _animator.CurrentAnimationName;
+        RegisterAnimations(textureName);
+        if (playingNow != null) _animator.Play(playingNow);
     }
 
     // ── Update Loop ───────────────────────────────────────────────────────────
@@ -635,12 +687,17 @@ public class Player : GameObject
         bool crouchHeld = InputManager.Instance.IsKeyDown(Keys.S)
                        || InputManager.Instance.IsKeyDown(Keys.Down);
 
-        // ถ้าไม่กด S แต่ height ยังเป็น crouch → restore เสมอ (source of truth คือ _currentHeight)
+        // ถ้าไม่กด S แต่ height ยังเป็น crouch → ลองลุก แต่ต้องเช็ค headroom ก่อน
         if (!crouchHeld && _currentHeight != PlayerHeight && State != PlayerState.Sliding)
         {
-            SetCrouchHeight(false);
-            if (State == PlayerState.Crouching)
-                ChangeState(VelocityX == 0f ? PlayerState.Idle : PlayerState.Running);
+            if (CanStandUp())
+            {
+                SetCrouchHeight(false);
+                if (State == PlayerState.Crouching)
+                    ChangeState(VelocityX == 0f ? PlayerState.Idle : PlayerState.Running);
+            }
+            // else: มีเพดานอยู่บน → ค้าง Crouching อัตโนมัติโดยไม่ต้องกด S
+            // พอเดินออกจากพื้นที่แคบ CanStandUp() จะ return true และลุกเองทันที
             return;
         }
 
@@ -705,8 +762,16 @@ public class Player : GameObject
         }
         else
         {
-            SetCrouchHeight(false);
-            ChangeState(PlayerState.Idle);
+            if (CanStandUp())
+            {
+                SetCrouchHeight(false);
+                ChangeState(PlayerState.Idle);
+            }
+            else
+            {
+                // slide หมดแต่ยังอยู่ใต้เพดาน → บังคับ Crouching (เดินย่อได้, ลุกเองเมื่อออก)
+                ChangeState(PlayerState.Crouching);
+            }
         }
     }
 
@@ -726,6 +791,31 @@ public class Player : GameObject
     }
 
     // ── Helper: Crouch Height ─────────────────────────────────────────────────
+
+    /// <summary>
+    /// ตรวจว่าพื้นที่เหนือหัวว่างพอที่จะลุกขึ้นยืนได้หรือไม่
+    /// เปรียบเทียบ solid rects กับ headroom rectangle ที่จะเพิ่มขึ้นเมื่อลุก
+    /// </summary>
+    private bool CanStandUp()
+    {
+        if (_currentHeight == PlayerHeight) return true; // ยืนอยู่แล้ว
+
+        float bottomY    = Position.Y + _currentHeight / 2f;  // ขอบล่าง (เท้า) — คงที่
+        float standTopY  = bottomY - PlayerHeight;             // ขอบบนขณะยืน
+        float crouchTopY = Position.Y - _currentHeight / 2f;  // ขอบบนขณะย่อ
+
+        // พื้นที่เพิ่มเติมที่ต้องการ = ระหว่าง standTopY กับ crouchTopY
+        var headroom = new Rectangle(
+            (int)(Position.X - PlayerWidth / 2f),
+            (int)standTopY,
+            PlayerWidth,
+            (int)(crouchTopY - standTopY));
+
+        foreach (var solid in _solidRects)
+            if (headroom.Intersects(solid)) return false;
+
+        return true;
+    }
 
     /// <summary>
     /// เปลี่ยนความสูง collider ระหว่างยืน ↔ นั่งยอง
