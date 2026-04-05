@@ -88,9 +88,9 @@ public class Player : GameObject
     // ── Coin Count ────────────────────────────────────────────────────────────
     public int CoinCount { get; private set; }
 
-    // ── Goal Animation ────────────────────────────────────────────────────────
-    // ปรับ GoalAnimTotalFrames ให้ตรงกับจำนวน frame จริงในแถว 14 ของ spritesheet
-    private const int   GoalAnimTotalFrames = 6;
+    // ── Goal / Death Animation (row 14) ──────────────────────────────────────
+    private const int   DeadAnimTotalFrames   = 6;    // ทุก frame ในแถว (ตายครบแถว)
+    private const int   GoalAnimTotalFrames   = 4;    // แค่ 4 frame แรกตอน goal
     private const float GoalAnimFrameDuration = 0.1f;
     private const int   GoalAnimLoopsRequired = 3;
     public  bool IsGoalAnimationComplete { get; private set; }
@@ -169,6 +169,7 @@ public class Player : GameObject
         _animator.AddAnimation("walljumpstart",  f.CreateFromRow(row: 11, totalFrames: 3, frameDuration: 0.083f, isLooping: false));
         _animator.AddAnimation("slidestart",     f.CreateFromRow(row: 12, totalFrames: 4, frameDuration: 0.083f, isLooping: false));
         _animator.AddAnimation("slide",          f.CreateFromRow(row: 13, totalFrames: 4, frameDuration: 0.083f));
+        _animator.AddAnimation("dead",           f.CreateFromRow(row: 14, totalFrames: DeadAnimTotalFrames, frameDuration: GoalAnimFrameDuration, isLooping: false));
         _animator.AddAnimation("goal",           f.CreateFromRow(row: 14, totalFrames: GoalAnimTotalFrames, frameDuration: GoalAnimFrameDuration));
         _animator.Play("standing");
 
@@ -210,6 +211,7 @@ public class Player : GameObject
         // Phase 7 — Respawn timer (ทำงานแม้ตาย)
         if (State == PlayerState.Dead)
         {
+            SyncAnimation(dt);
             _respawnTimer -= dt;
             if (_respawnTimer <= 0f) Respawn();
             return;
@@ -395,6 +397,11 @@ public class Player : GameObject
                     _animator.Play("slide");
                 break;
 
+            case PlayerState.Dead:
+                _idleTimer = 0f;
+                _animator.Play("dead");
+                break;
+
             case PlayerState.GoalReached:
                 _idleTimer = 0f;
                 _animator.Play("goal");
@@ -551,7 +558,9 @@ public class Player : GameObject
     /// </summary>
     private void HandleJump()
     {
-        if (!InputManager.Instance.IsKeyPressed(Keys.Space)) return;
+        bool jumpPressed = InputManager.Instance.IsKeyPressed(Keys.Space)
+                        || InputManager.Instance.IsKeyPressed(Keys.W);
+        if (!jumpPressed) return;
 
         if (IsGrounded || _coyoteTimer > 0f)
         {
