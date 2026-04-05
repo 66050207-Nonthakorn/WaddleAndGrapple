@@ -49,7 +49,7 @@ public class Player : GameObject
     // ── Phase 7: Death ────────────────────────────────────────────────────────
     private const float FallDeathY      = 480f;   // ขอบล่างหน้าจอ → ตาย
     private const float ScreenLeft      = 0f;     // ขอบซ้าย
-    private const float ScreenRight     = 2400f;  // ขอบขวาของ demo scene
+    private const float ScreenRight     = 4800f;  // ขอบขวาของ demo scene
     private const float RespawnDelaySec = 1.5f;   // วินาทีก่อน respawn
 
     // ── Velocity ──────────────────────────────────────────────────────────────

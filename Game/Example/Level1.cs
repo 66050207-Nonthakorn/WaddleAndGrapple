@@ -11,24 +11,17 @@ using GamePlayer = WaddleAndGrapple.Game.Player;
 namespace WaddleAndGrapple.Game.Example;
 
 /// <summary>
-/// Test Map v2 — 2400px wide, 4 zones, checkpoint ทุก 600px
+/// Test Map v3 — 4800px wide, 4 sections × 1200px (wider than viewport=960 so clamp works)
 ///
-///  Zone A (0–600):    Tutorial — platform ใหญ่ chain 2 ชั้น, saw ช้า
-///                     Items: 3 coins บนพื้น, SpeedBoost บน plat_a2
-///
-///  Zone B (600–1200): Timing  — timed laser ขวางทาง, floor spike
-///                     Items: 2 coins บนพื้น, 3 coins บน plat_b2, DoubleJump บน plat_b1
-///
-///  Zone C (1200–1800): Grapple — ช่องว่าง 220px, hook wall, ceiling spike
-///                     Items: 2 coins ก่อนช่อง, 3 coins บน plat_c1, SlowTime บน plat_c2
-///
-///  Zone D (1800–2400): Gauntlet — wall spike pair, fast saw, always-on laser
-///                     Items: 2 coins บนพื้นก่อน saw
+///  Section 0 (0–1200):    Zones A+B — platforms, saw, laser
+///  Section 1 (1200–2400): Zones C+D — grapple gap, spikes, goal placeholder
+///  Section 2 (2400–3600): Zone E    — extended run, more platforms
+///  Section 3 (3600–4800): Zone F    — final gauntlet, goal flag
 ///
 /// กระโดดสูงสุด: ~126px (JumpForce 550 / Gravity 1200)
 /// ยืนบนพื้น (floor y=450): player center y=420
 /// </summary>
-class Level1 : Scene
+class Level1 : BaseLevel
 {
     GamePlayer player;
     GameObject cameraObject;
@@ -42,6 +35,9 @@ class Level1 : Scene
 
     public override void Setup()
     {
+        LevelIndex = 1;
+        SetTotalFish(28);
+
         // ── Camera ────────────────────────────────────────────────────────────
         cameraObject = base.AddGameObject<GameObject>("camera");
         var camera   = cameraObject.AddComponent<Camera2D>();
@@ -62,6 +58,7 @@ class Level1 : Scene
         var startSpawn = new Vector2(80, 380);
         player.Position = startSpawn;
         player.SetSpawnPoint(startSpawn);
+        RegisterPlayerForProgression(player);
 
         // ══════════════════════════════════════════════════════════════════════
         // SOLIDS
@@ -69,38 +66,52 @@ class Level1 : Scene
         var solids = new List<Microsoft.Xna.Framework.Rectangle>
         {
             // ── พื้น (ช่องว่าง Zone C: x=1300–1520) ─────────────────────────
-            new(   0, 450, 1300, 150),   // Zone A + B + ต้น C
-            new(1520, 450,  880, 150),   // ปลาย C + Zone D
+            new(   0, 450, 1300, 150),   // Section 0-1 ต้น
+            new(1520, 450,  880, 150),   // Section 1 ปลาย
+            new(2400, 450, 2400, 150),   // Section 2-3
 
-            // ── Zone A ────────────────────────────────────────────────────────
-            // plat_a1: platform ต่ำ กระโดดจากพื้นง่าย (rise 50px)
-            new( 150, 370, 300, 20),
-            // plat_a2: สูงขึ้นอีกชั้น chain จาก a1 (rise 70px จาก center=340)
-            new( 440, 295, 260, 20),
+            // ── Zone A (Section 0) ────────────────────────────────────────────
+            new( 150, 370, 300, 20),     // plat_a1
+            new( 440, 295, 260, 20),     // plat_a2
 
-            // ── Zone B ────────────────────────────────────────────────────────
+            // ── Zone B (Section 0) ────────────────────────────────────────────
             new( 640, 370, 300, 20),     // plat_b1
-            new( 990, 295, 270, 20),     // plat_b2 (chain จาก b1, rise 70px)
+            new( 990, 295, 270, 20),     // plat_b2
 
-            // ── Zone C ────────────────────────────────────────────────────────
-            new(1320, 258,  20, 197),    // hook_wall — grapple ข้ามช่องว่าง
-            new(1540, 360, 300, 20),     // plat_c1 — ลงจอดหลังข้ามช่อง
-            new(1810, 280, 250, 20),     // plat_c2 — chain จาก c1 (rise 80px)
+            // ── Zone C (Section 1) ────────────────────────────────────────────
+            new(1320, 258,  20, 197),    // hook_wall
+            new(1540, 360, 300, 20),     // plat_c1
+            new(1810, 280, 250, 20),     // plat_c2
 
-            // ── Zone D ────────────────────────────────────────────────────────
+            // ── Zone D (Section 1) ────────────────────────────────────────────
             new(1865, 360, 300, 20),     // plat_d1
-            new(2195, 285, 265, 20),     // plat_d2 — chain จาก d1 (rise 75px)
+            new(2195, 285, 265, 20),     // plat_d2
+
+            // ── Zone E (Section 2: 2400–3600) ────────────────────────────────
+            new(2480, 370, 250, 20),     // plat_e1
+            new(2780, 300, 220, 20),     // plat_e2
+            new(3050, 370, 280, 20),     // plat_e3
+            new(3310, 290, 240, 20),     // plat_e4
+
+            // ── Zone F (Section 3: 3600–4800) ────────────────────────────────
+            new(3680, 370, 260, 20),     // plat_f1
+            new(3980, 295, 230, 20),     // plat_f2
+            new(4250, 370, 280, 20),     // plat_f3
+            new(4510, 300, 250, 20),     // plat_f4 (near goal)
         };
         player.SetSolids(solids);
 
         // ══════════════════════════════════════════════════════════════════════
-        // VISUALS — พื้น (tile 150px)
+        // VISUALS — floor tiles 150px
         // ══════════════════════════════════════════════════════════════════════
-        for (int i = 0; i < 9; i++)   // x = 0–1299
+        for (int i = 0; i < 9; i++)        // x = 0–1299
             AddBlock($"fl_{i}", i * 150, 450, 150, 150,
                      i % 2 == 0 ? ColFloorA : ColFloorB);
-        for (int i = 0; i < 6; i++)   // x = 1520–2399
+        for (int i = 0; i < 6; i++)        // x = 1520–2399
             AddBlock($"fl_{10+i}", 1520 + i * 150, 450, 150, 150,
+                     i % 2 == 0 ? ColFloorA : ColFloorB);
+        for (int i = 0; i < 16; i++)       // x = 2400–4799
+            AddBlock($"fl_{20+i}", 2400 + i * 150, 450, 150, 150,
                      i % 2 == 0 ? ColFloorA : ColFloorB);
 
         // ── Platform visuals ─────────────────────────────────────────────────
@@ -113,29 +124,39 @@ class Level1 : Scene
         AddBlock("plat_c2",  1810, 280, 250, 20, ColPlatform);
         AddBlock("plat_d1",  1865, 360, 300, 20, ColPlatform);
         AddBlock("plat_d2",  2195, 285, 265, 20, ColPlatform);
+        // Zone E
+        AddBlock("plat_e1",  2480, 370, 250, 20, ColPlatform);
+        AddBlock("plat_e2",  2780, 300, 220, 20, ColPlatform);
+        AddBlock("plat_e3",  3050, 370, 280, 20, ColPlatform);
+        AddBlock("plat_e4",  3310, 290, 240, 20, ColPlatform);
+        // Zone F
+        AddBlock("plat_f1",  3680, 370, 260, 20, ColPlatform);
+        AddBlock("plat_f2",  3980, 295, 230, 20, ColPlatform);
+        AddBlock("plat_f3",  4250, 370, 280, 20, ColPlatform);
+        AddBlock("plat_f4",  4510, 300, 250, 20, ColPlatform);
 
         // ══════════════════════════════════════════════════════════════════════
-        // CHECKPOINTS / SECTIONS
+        // CHECKPOINTS / SECTIONS  (4 × 1200px — each wider than viewport 960px)
         // ══════════════════════════════════════════════════════════════════════
         CheckpointManager.Instance.Reset();
         CheckpointManager.Instance.RegisterSections(new[]
         {
-            new Section { Id=0, LeftBound=   0, RightBound= 600,
-                LeftSpawnPoint = startSpawn,
-                RightSpawnPoint = new Vector2(560, 380) },
-            new Section { Id=1, LeftBound= 600, RightBound=1200,
-                LeftSpawnPoint  = new Vector2(620, 380),
-                RightSpawnPoint = new Vector2(1170, 380) },
-            new Section { Id=2, LeftBound=1200, RightBound=1800,
+            new Section { Id=0, LeftBound=    0, RightBound= 1200,
+                LeftSpawnPoint  = startSpawn,
+                RightSpawnPoint = new Vector2(1160, 380) },
+            new Section { Id=1, LeftBound= 1200, RightBound= 2400,
                 LeftSpawnPoint  = new Vector2(1230, 380),
-                RightSpawnPoint = new Vector2(1760, 380) },
-            new Section { Id=3, LeftBound=1800, RightBound=2400,
-                LeftSpawnPoint  = new Vector2(1830, 380),
                 RightSpawnPoint = new Vector2(2360, 380) },
+            new Section { Id=2, LeftBound= 2400, RightBound= 3600,
+                LeftSpawnPoint  = new Vector2(2430, 380),
+                RightSpawnPoint = new Vector2(3560, 380) },
+            new Section { Id=3, LeftBound= 3600, RightBound= 4800,
+                LeftSpawnPoint  = new Vector2(3630, 380),
+                RightSpawnPoint = new Vector2(4760, 380) },
         });
 
         AddBlock("spawn_marker", (int)startSpawn.X, (int)startSpawn.Y - 40, 8, 50, ColMarker);
-        foreach (var (nm, x) in new[] { ("cp1",600), ("cp2",1200), ("cp3",1800) })
+        foreach (var (nm, x) in new[] { ("cp1",1200), ("cp2",2400), ("cp3",3600) })
             AddBlock(nm, x, 375, 10, 75, ColCheckpt);
 
         camera.FollowTarget = player;
@@ -297,13 +318,28 @@ class Level1 : Scene
         AddCoins("cCp", new[] { 1570f, 1620f, 1670f }, y: 323f);
         AddItem<SlowTimePowerUp>("slow", 1935f, 243f);      // plat_c2 center
 
-        // Zone D — 2 coins บนพื้นก่อน wall spike
+        // Zone D — 2 coins
         AddCoins("cDf", new[] { 1890f, 1930f }, y: 415f);
 
-        // ── Goal Flag ── ปลายด่าน ──────────────────────────────────────────
+        // Zone E (Section 2) — coins on platforms
+        AddCoins("cEf", new[] { 2440f, 2480f }, y: 415f);
+        AddCoins("cEp", new[] { 2510f, 2560f, 2610f }, y: 333f);   // plat_e1
+        AddCoins("cEp2", new[] { 2810f, 2860f }, y: 263f);          // plat_e2
+        AddItem<SpeedBoostPowerUp>("sboost2", 3170f, 333f);          // plat_e3
+
+        // Zone F (Section 3) — coins + goal
+        AddCoins("cFf", new[] { 3640f, 3680f }, y: 415f);
+        AddCoins("cFp", new[] { 3710f, 3760f }, y: 333f);           // plat_f1
+        AddCoins("cFp2", new[] { 4010f, 4060f }, y: 258f);          // plat_f2
+        AddItem<DoubleJumpPowerUp>("djump2", 4370f, 333f);           // plat_f3
+
+        // ── Goal Flag — end of Section 3 ───────────────────────────────────
         var goal = base.AddGameObject<GoalFlag>("goal");
-        goal.Position = new Vector2(2340, 285);  // บน plat_d2 (x=2195,w=265,y=285)
-        goal.Player   = player;
+        goal.Position   = new Vector2(4630, 265);  // plat_f4
+        goal.Player     = player;
+        goal.OnComplete = CompleteLevel;
+
+        base.Setup(); // สร้าง PausedPanel + TimerUI (ต้องเป็นบรรทัดสุดท้าย)
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -334,5 +370,20 @@ class Level1 : Scene
         var item = base.AddGameObject<T>(name);
         item.Position = new Vector2(x, y);
         item.SetPlayer(player);
+    }
+
+    protected override void CompleteLevel()
+    {
+        _isLevelCompleted = true;
+
+        ProgressionManager.Instance.CompleteLevel(
+            LevelIndex,
+            TimeSpan.FromMilliseconds(_timerUI.GetElapsedTime()),
+            player?.CoinCount ?? 0,
+            _totalFishInLevel,
+            GetLatestCheckpoint());
+
+        Console.WriteLine($"Level {LevelIndex} completed!");
+        SceneManager.Instance.LoadScene("levelcomplete");
     }
 }
