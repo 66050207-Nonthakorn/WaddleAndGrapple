@@ -15,7 +15,6 @@ public enum PlayerState
 {
     Idle,
     Running,
-    Sprinting,
     Jumping,
     Falling,
     WallClinging,
@@ -35,9 +34,9 @@ public class Player : GameObject
     public const float Gravity          = 1200f;  // px/s²
     public const float MaxFallSpeed     = 700f;   // px/s
     public const float JumpForce        = -550f;  // px/s (ลบ = ขึ้น)
-    public const float SprintMultiplier = 1.6f;
     public const float SlideSpeed       = 420f;   // px/s
-    public const float SlideDuration    = 0.45f;  // วินาที
+    public const int   SlideLoopCount  = 2;       // ← เปลี่ยนตรงนี้เพื่อยืด/สั้นระยะสไลด์ (จำนวนรอบของ row 13)
+    public const float SlideDuration   = 0.083f * 4f * (1 + SlideLoopCount); // slidestart 1× + row13 N×
     public const float WallSlideSpeed    = 60f;    // px/s
     public const float RopeLaunchSpeed  = 900f;   // ความเร็วดึงตัวเองไปตามเชือก (px/s)
 
@@ -85,8 +84,8 @@ public class Player : GameObject
     // ── Dynamic Collider Height (ลดครึ่งหนึ่งตอน Crouching/Sliding) ──────────
     private int _currentHeight = PlayerHeight;
 
-    // ── Coin Count ────────────────────────────────────────────────────────────
-    public int CoinCount { get; private set; }
+    // ── Fish Count ────────────────────────────────────────────────────────────
+    public int FishCount { get; private set; }
 
     // ── Goal / Death Animation (row 14) ──────────────────────────────────────
     private const int   DeadAnimTotalFrames   = 6;    // ทุก frame ในแถว (ตายครบแถว)
@@ -131,6 +130,7 @@ public class Player : GameObject
     private const float IdleBreathDelay   = 3f;    // วินาทีก่อนเล่น Breathe
     private float _jumpAnimTimer;                  // > 0 → เล่น jumpstart / walljumpstart
     private float _slideAnimTimer;                 // > 0 → เล่น slidestart
+    private float _slideEndAnimTimer;              // > 0 → เล่น slideend (row 12 reversed)
 
     // ── Rope Dash ─────────────────────────────────────────────────────────────
     private bool _isRopeDashing = false;
@@ -163,12 +163,13 @@ public class Player : GameObject
 
         Pickaxe = new IcePickaxe(this);
         Pickaxe.Initialize();
+        Pickaxe.SetEnemies(_enemies); // forward enemies ที่อาจถูกตั้งไว้ก่อน Initialize
 
         var pickaxeRenderer = AddComponent<PickaxeRenderer>();
         pickaxeRenderer.Setup(this, Pickaxe);
 
         AddComponent<PowerUpBarRenderer>();
-        AddComponent<CoinHUD>();
+        AddComponent<FishHUD>();
     }
 
     // ── Spritesheet Helpers ───────────────────────────────────────────────────
@@ -194,6 +195,7 @@ public class Player : GameObject
         _animator.AddAnimation("walljumpstart", f.CreateFromRow(row: 11, totalFrames: 3, frameDuration: 0.083f, isLooping: false));
         _animator.AddAnimation("slidestart",    f.CreateFromRow(row: 12, totalFrames: 4, frameDuration: 0.083f, isLooping: false));
         _animator.AddAnimation("slide",         f.CreateFromRow(row: 13, totalFrames: 4, frameDuration: 0.083f));
+        _animator.AddAnimation("slideend",      f.CreateFromRowReversed(row: 12, totalFrames: 4, frameDuration: 0.083f, isLooping: false));
         _animator.AddAnimation("dead",          f.CreateFromRow(row: 14, totalFrames: DeadAnimTotalFrames, frameDuration: GoalAnimFrameDuration, isLooping: false));
         _animator.AddAnimation("goal",          f.CreateFromRow(row: 14, totalFrames: GoalAnimTotalFrames, frameDuration: GoalAnimFrameDuration));
     }
@@ -322,7 +324,7 @@ public class Player : GameObject
         HandleCrouch();
         HandleMove();
         if (Pickaxe.IsHooked) HandleRopeLaunch();
-        else                { _isRopeDashing = false; HandleSprint(); }
+        else                  _isRopeDashing = false;
         HandleWallCling();
         HandleLedgeGrab();
         HandleJump();
@@ -368,6 +370,7 @@ public class Player : GameObject
     private const float JumpStartDuration     = 0.083f; // ความยาว 1 frame
     private const float WallJumpStartDuration = 0.083f * 3f;
     private const float SlideStartDuration    = 0.083f * 4f;
+    private const float SlideEndAnimDuration  = 0.083f * 4f; // row 12 reversed
 
     // ขยับ sprite ขึ้น (ไม่กระทบ collider) เพื่อชดเชย sprite art ที่วาดต่ำกว่า frame กลาง
     private const float CrouchSpriteOffsetY = -15f;
@@ -375,8 +378,9 @@ public class Player : GameObject
     private void SyncAnimation(float dt)
     {
         // ── countdown timers ──────────────────────────────────────────────────
-        if (_jumpAnimTimer  > 0f) _jumpAnimTimer  -= dt;
-        if (_slideAnimTimer > 0f) _slideAnimTimer -= dt;
+        if (_jumpAnimTimer     > 0f) _jumpAnimTimer     -= dt;
+        if (_slideAnimTimer    > 0f) _slideAnimTimer    -= dt;
+        if (_slideEndAnimTimer > 0f) _slideEndAnimTimer -= dt;
 
         bool isCrouched = State == PlayerState.Crouching || State == PlayerState.Sliding;
         _spriteRenderer.DrawOffset = isCrouched
@@ -398,11 +402,6 @@ public class Player : GameObject
             case PlayerState.Running:
                 _idleTimer = 0f;
                 _animator.Play("walk");
-                break;
-
-            case PlayerState.Sprinting:
-                _idleTimer = 0f;
-                _animator.Play("run");
                 break;
 
             // ── Jump: jumpstart 1 frame → jump ────────────────────────────────
@@ -440,11 +439,13 @@ public class Player : GameObject
                     _animator.Play("crouch");
                 break;
 
-            // ── Slide: slidestart → slide ──────────────────────────────────────
+            // ── Slide: slidestart → slide → slideend ──────────────────────────
             case PlayerState.Sliding:
                 _idleTimer = 0f;
                 if (_slideAnimTimer > 0f)
                     _animator.Play("slidestart");
+                else if (_slideEndAnimTimer > 0f)
+                    _animator.Play("slideend");
                 else
                     _animator.Play("slide");
                 break;
@@ -515,27 +516,6 @@ public class Player : GameObject
               && State != PlayerState.Jumping
               && VelocityY > 0f)
             ChangeState(PlayerState.Falling);
-    }
-
-    /// <summary>
-    /// Shift + A/D: วิ่งเร็ว — คูณ VelocityX ด้วย SprintMultiplier
-    /// เรียกหลัง HandleMove เสมอ เพื่อให้ VelocityX ตั้งค่าแล้ว
-    /// </summary>
-    private void HandleSprint()
-    {
-        if (State == PlayerState.Sliding
-         || State == PlayerState.LedgeGrabbing
-         || State == PlayerState.Crouching) return;
-
-        bool shiftHeld = InputManager.Instance.IsKeyDown(Keys.LeftShift)
-                      || InputManager.Instance.IsKeyDown(Keys.RightShift);
-        bool moving    = VelocityX != 0f;
-
-        if (shiftHeld && moving)
-        {
-            VelocityX *= SprintMultiplier;
-            if (IsGrounded) ChangeState(PlayerState.Sprinting);
-        }
     }
 
     /// <summary>
@@ -613,6 +593,9 @@ public class Player : GameObject
         bool jumpPressed = InputManager.Instance.IsKeyPressed(Keys.Space)
                         || InputManager.Instance.IsKeyPressed(Keys.W);
         if (!jumpPressed) return;
+
+        // อยู่ในพื้นที่แคบ (ย่ออยู่ + มีเพดานบัง) → กระโดดไม่ได้
+        if (_currentHeight != PlayerHeight && !CanStandUp()) return;
 
         if (IsGrounded || _coyoteTimer > 0f)
         {
@@ -719,7 +702,7 @@ public class Player : GameObject
     }
 
     /// <summary>
-    /// Shift+S หรือ Sprint+S: สไลด์ไปข้างหน้าด้วยความเร็วสูง
+    /// Shift+A/D: สไลด์ไปซ้าย/ขวาด้วยความเร็วสูง
     ///   ระหว่าง Slide: VelocityX = SlideSpeed (ทิศตาม FacingDirection), นับ timer
     ///   หมดเวลา: กลับ Crouching (ถ้ายัง hold S) หรือ Idle
     ///   Interaction กับ TankElephant: stub — รอ Member 3
@@ -727,15 +710,18 @@ public class Player : GameObject
     private void HandleSlide(float dt)
     {
         // ── Trigger ──────────────────────────────────────────────────────────
-        bool crouchPressed = InputManager.Instance.IsKeyPressed(Keys.S)
-                          || InputManager.Instance.IsKeyPressed(Keys.Down);
-        bool shiftHeld     = InputManager.Instance.IsKeyDown(Keys.LeftShift)
-                          || InputManager.Instance.IsKeyDown(Keys.RightShift);
-        bool canSlide      = IsGrounded && crouchPressed
-                          && (shiftHeld || State == PlayerState.Sprinting);
+        bool shiftHeld    = InputManager.Instance.IsKeyDown(Keys.LeftShift)
+                         || InputManager.Instance.IsKeyDown(Keys.RightShift);
+        bool rightPressed = InputManager.Instance.IsKeyPressed(Keys.D)
+                         || InputManager.Instance.IsKeyPressed(Keys.Right);
+        bool leftPressed  = InputManager.Instance.IsKeyPressed(Keys.A)
+                         || InputManager.Instance.IsKeyPressed(Keys.Left);
+        bool canSlide     = IsGrounded && shiftHeld && (rightPressed || leftPressed)
+                         && (_currentHeight == PlayerHeight || CanStandUp()); // อยู่ใต้เพดาน → slide ไม่ได้
 
         if (canSlide && State != PlayerState.Sliding)
         {
+            FacingDirection = rightPressed ? 1 : -1;
             SetCrouchHeight(true);
             _slideTimer = SlideDuration;
             ChangeState(PlayerState.Sliding);
@@ -744,8 +730,34 @@ public class Player : GameObject
         if (State != PlayerState.Sliding) return;
 
         // ── During Slide ──────────────────────────────────────────────────────
+        // ช่วง slideend animation: หยุดเคลื่อนที่ รอ animation จบก่อน transition
+        if (_slideEndAnimTimer > 0f)
+        {
+            VelocityX = 0f;
+            if (_slideEndAnimTimer > dt) return; // ยังไม่จบ
+
+            // slideend จบแล้ว → transition ออกจาก Sliding
+            bool stillCrouching = InputManager.Instance.IsKeyDown(Keys.S)
+                               || InputManager.Instance.IsKeyDown(Keys.Down);
+            if (stillCrouching || !CanStandUp())
+            {
+                ChangeState(PlayerState.Crouching);
+            }
+            else
+            {
+                SetCrouchHeight(false);
+                ChangeState(PlayerState.Idle);
+            }
+            return;
+        }
+
         VelocityX    = FacingDirection * SlideSpeed;
         _slideTimer -= dt;
+
+        // ตรวจชน enemy ขณะสไลด์ → enemy ตาย
+        foreach (var enemy in _enemies)
+            if (_collider.Bounds.Intersects(enemy.ColliderBounds))
+                enemy.Die();
 
         // TODO (Phase 3 → Member 3): TankElephant interaction
         //   ตรวจ _collider.Bounds ชน TankElephant.Collider.Bounds
@@ -754,25 +766,8 @@ public class Player : GameObject
         // ── Slide End ─────────────────────────────────────────────────────────
         if (_slideTimer > 0f && IsGrounded) return;
 
-        bool stillCrouching = InputManager.Instance.IsKeyDown(Keys.S)
-                           || InputManager.Instance.IsKeyDown(Keys.Down);
-        if (stillCrouching)
-        {
-            ChangeState(PlayerState.Crouching); // ยังนิ้วอยู่ → นั่งยอง
-        }
-        else
-        {
-            if (CanStandUp())
-            {
-                SetCrouchHeight(false);
-                ChangeState(PlayerState.Idle);
-            }
-            else
-            {
-                // slide หมดแต่ยังอยู่ใต้เพดาน → บังคับ Crouching (เดินย่อได้, ลุกเองเมื่อออก)
-                ChangeState(PlayerState.Crouching);
-            }
-        }
+        // เริ่ม slideend animation (หยุดนิ่ง รอ reverse animation จบ)
+        _slideEndAnimTimer = SlideEndAnimDuration;
     }
 
     /// <summary>
@@ -938,6 +933,13 @@ public class Player : GameObject
     public void SetSolids(List<Rectangle> solids) => _solidRects = solids;
     public IReadOnlyList<Rectangle> Solids => _solidRects;
 
+    private List<Enemy> _enemies = [];
+    public void SetEnemies(List<Enemy> enemies)
+    {
+        _enemies = enemies;
+        Pickaxe?.SetEnemies(enemies); // Pickaxe อาจยังเป็น null ถ้าเรียกก่อน Initialize
+    }
+
     // ══════════════════════════════════════════════════════════════════════════
     // Phase 1: API (PowerUp / Coin / Death / State)
     // ══════════════════════════════════════════════════════════════════════════
@@ -958,7 +960,7 @@ public class Player : GameObject
         }
     }
 
-    public void AddCoin(int value) => CoinCount += value;
+    public void AddFish(int value) => FishCount += value;
 
     /// <summary>เรียกจาก GoalFlag เมื่อ player แตะธง — เล่น animation 3 รอบก่อนขึ้น overlay</summary>
     public void TriggerGoalReached()
@@ -1049,7 +1051,8 @@ public class Player : GameObject
                 _jumpAnimTimer = JumpStartDuration;     // jumpstart 1 frame
                 break;
             case PlayerState.Sliding:
-                _slideAnimTimer = SlideStartDuration;   // slidestart 4 frames
+                _slideAnimTimer    = SlideStartDuration;   // slidestart 4 frames
+                _slideEndAnimTimer = 0f;                   // reset slideend
                 break;
             case PlayerState.Idle:
                 _idleTimer = 0f;                        // reset breathe timer

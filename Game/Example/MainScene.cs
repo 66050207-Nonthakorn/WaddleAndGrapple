@@ -269,28 +269,28 @@ class MainScene : Scene
         // ══════════════════════════════════════════════════════════════════════
         // ITEMS — Coins & Power-Ups
         //
-        // Coin  (สีทอง)   : เพิ่ม CoinCount — secondary score
+        // Fish  (ปลา)     : เพิ่ม FishCount — secondary score
         // SpeedBoost (M)  : MoveSpeed ×1.5 เป็น 10 วิ
         // DoubleJump (M)  : กระโดดได้อีกครั้งในอากาศ (one-time)
         // SlowTime   (M)  : ชะลอ world ทั้งหมด 8 วิ (timer ยังเดินปกติ)
         // ══════════════════════════════════════════════════════════════════════
 
         // Zone A — 3 coins บนพื้น (ก่อน saw), SpeedBoost บน plat_a2
-        AddCoins("cA", new[] { 90f, 130f, 170f }, y: 415f);
+        AddFish("cA", new[] { 90f, 130f, 170f }, y: 415f);
         AddItem<SpeedBoostPowerUp>("sboost", 555f, 258f);   // plat_a2 center
 
         // Zone B — 2 coins บนพื้นก่อน laser, 3 coins บน plat_b2, DoubleJump บน plat_b1
-        AddCoins("cBf", new[] { 665f, 705f }, y: 415f);
-        AddCoins("cBp", new[] { 1015f, 1065f, 1110f }, y: 258f);
+        AddFish("cBf", new[] { 665f, 705f }, y: 415f);
+        AddFish("cBp", new[] { 1015f, 1065f, 1110f }, y: 258f);
         AddItem<DoubleJumpPowerUp>("djump", 790f, 333f);    // plat_b1 center
 
         // Zone C — 2 coins ก่อนช่อง, 3 coins บน plat_c1, SlowTime บน plat_c2
-        AddCoins("cCf", new[] { 1230f, 1270f }, y: 415f);
-        AddCoins("cCp", new[] { 1570f, 1620f, 1670f }, y: 323f);
+        AddFish("cCf", new[] { 1230f, 1270f }, y: 415f);
+        AddFish("cCp", new[] { 1570f, 1620f, 1670f }, y: 323f);
         AddItem<SlowTimePowerUp>("slow", 1935f, 243f);      // plat_c2 center
 
         // Zone D — 2 coins บนพื้นก่อน wall spike
-        AddCoins("cDf", new[] { 1890f, 1930f }, y: 415f);
+        AddFish("cDf", new[] { 1890f, 1930f }, y: 415f);
 
         // ── Goal Flag ── ปลายด่าน ──────────────────────────────────────────
         var goal = base.AddGameObject<GoalFlag>("goal");
@@ -311,11 +311,11 @@ class MainScene : Scene
         sr.LayerDepth = 0.1f;
     }
 
-    private void AddCoins(string prefix, float[] xs, float y)
+    private void AddFish(string prefix, float[] xs, float y)
     {
         for (int i = 0; i < xs.Length; i++)
         {
-            var c = base.AddGameObject<Coin>($"{prefix}_{i}");
+            var c = base.AddGameObject<Fish>($"{prefix}_{i}");
             c.Position = new Vector2(xs[i], y);
             c.SetPlayer(player);
         }

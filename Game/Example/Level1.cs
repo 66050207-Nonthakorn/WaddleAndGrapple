@@ -75,7 +75,9 @@ class Level1 : BaseLevel
         var enemy1 = base.AddGameObject<GameEnemy>("enemy_1");
         enemy1.Position     = new Vector2(1620, 420);
         enemy1.PatrolRadius = 150f;
+        enemy1.SceneKey     = "enemy_1";
         enemy1.SetPlayer(player);
+        player.SetEnemies([ enemy1 ]);
 
         // ══════════════════════════════════════════════════════════════════════
         // SOLIDS
@@ -202,42 +204,42 @@ class Level1 : BaseLevel
         // ── Section 0: อุโมงค์ก้ม → a1 → a2 (SpeedBoost) ──────────────────────
         // เหรียญ trail พา player ตรงเข้าอุโมงค์ (x=350–479)
         // เหรียญในอุโมงค์: ดึงดูดให้ก้ม/slide เข้าไปเก็บ
-        AddCoins("cA0",  new[] { 110f, 165f, 240f, 315f }, y: 415f); // floor trail → อุโมงค์
-        AddCoins("cAtun",new[] { 415f               },     y: 430f); // IN tunnel (reward)
-        AddCoins("cA1",  new[] { 600f, 665f, 730f   },     y: 333f); // บน a1 (x=530-789, y=370-37)
-        AddCoins("cA2",  new[] { 880f, 950f         },     y: 258f); // บน a2 (x=830-1079, y=295-37)
+        AddFish("cA0",  new[] { 110f, 165f, 240f, 315f }, y: 415f); // floor trail → อุโมงค์
+        AddFish("cAtun",new[] { 415f               },     y: 430f); // IN tunnel (reward)
+        AddFish("cA1",  new[] { 600f, 665f, 730f   },     y: 333f); // บน a1 (x=530-789, y=370-37)
+        AddFish("cA2",  new[] { 880f, 950f         },     y: 258f); // บน a2 (x=830-1079, y=295-37)
         AddItem<SpeedBoostPowerUp>("speed_a", 1010f, 258f);           // ปลาย a2
-        AddCoins("cA3",  new[] { 1065f, 1120f       },     y: 415f); // floor exit
+        AddFish("cA3",  new[] { 1065f, 1120f       },     y: 415f); // floor exit
 
         // ── Section 1: ช้างตัวแรก ───────────────────────────────────────────
         // b1 อยู่ก่อนช้าง (x=1500 < enemy x=1620) → ขึ้นหลบได้ทันที
         // b3 สูงสุด: DoubleJump เป็น reward สำหรับคนที่ขึ้นไปถึง
-        AddCoins("cB0", new[] { 1225f, 1265f },          y: 415f); // floor entry
-        AddCoins("cB1", new[] { 1310f, 1375f, 1440f },   y: 333f); // บน b1 (y=370-37)
-        AddCoins("cB2", new[] { 1760f, 1830f },          y: 258f); // บน b2 (y=295-37)
+        AddFish("cB0", new[] { 1225f, 1265f },          y: 415f); // floor entry
+        AddFish("cB1", new[] { 1310f, 1375f, 1440f },   y: 333f); // บน b1 (y=370-37)
+        AddFish("cB2", new[] { 1760f, 1830f },          y: 258f); // บน b2 (y=295-37)
         AddItem<DoubleJumpPowerUp>("djump_b", 2175f, 198f);         // บน b3 (y=235-37)
-        AddCoins("cB3", new[] { 2330f, 2380f },          y: 415f); // floor exit
+        AddFish("cB3", new[] { 2330f, 2380f },          y: 415f); // floor exit
 
         // ── Section 2: Grapple ──────────────────────────────────────────────
         // cArc: เหรียญลอยในอากาศรูปโค้งนำไปหา c1
         //   - x=2660 อยู่บนพื้น ก่อนหลุม (เก็บขณะเดิน)
         //   - x=2720, 2790 ลอยเหนือหลุม — เก็บได้ขณะ swing เป็น visual hint
         // c1/c2: เก็บได้ขณะลงจอดบน platform
-        AddCoins("cC0",  new[] { 2450f, 2530f, 2610f }, y: 415f);  // floor approach
-        AddCoins("cArc", new[] { 2660f, 2720f, 2790f }, y: 400f);  // arc hint (midair)
-        AddCoins("cC1",  new[] { 2840f, 2910f },        y: 268f);  // บน c1 (y=305-37)
-        AddCoins("cC2",  new[] { 3110f, 3180f },        y: 228f);  // บน c2 (y=265-37)
-        AddCoins("cC3",  new[] { 3360f, 3420f },        y: 415f);  // floor landing
+        AddFish("cC0",  new[] { 2450f, 2530f, 2610f }, y: 415f);  // floor approach
+        AddFish("cArc", new[] { 2660f, 2720f, 2790f }, y: 400f);  // arc hint (midair)
+        AddFish("cC1",  new[] { 2840f, 2910f },        y: 268f);  // บน c1 (y=305-37)
+        AddFish("cC2",  new[] { 3110f, 3180f },        y: 228f);  // บน c2 (y=265-37)
+        AddFish("cC3",  new[] { 3360f, 3420f },        y: 415f);  // floor landing
 
         // ── Section 3: Traps + Goal ─────────────────────────────────────────
         // SlowTime อยู่บน d1 ก่อนถึง trap → player ใช้ SlowTime ผ่านหนาม+เลื่อย
         // สองเส้นทาง:
         //   A) Floor path: ใช้ SlowTime เดินผ่าน → กระโดดขึ้น d2 จากพื้น
         //   B) Air path: มี DoubleJump → กระโดดจาก d1 ข้าม trap ไป d2 โดยตรง
-        AddCoins("cD0", new[] { 3640f, 3685f },     y: 415f);      // floor entry
-        AddCoins("cD1", new[] { 3750f, 3820f },     y: 333f);      // บน d1 (y=370-37)
+        AddFish("cD0", new[] { 3640f, 3685f },     y: 415f);      // floor entry
+        AddFish("cD1", new[] { 3750f, 3820f },     y: 333f);      // บน d1 (y=370-37)
         AddItem<SlowTimePowerUp>("slow_d", 3900f, 333f);            // ปลาย d1
-        AddCoins("cD2", new[] { 4340f, 4410f },     y: 308f);      // บน d2 (y=345-37)
+        AddFish("cD2", new[] { 4340f, 4410f },     y: 308f);      // บน d2 (y=345-37)
 
         // ── Goal Flag ─────────────────────────────────────────────────────────
         // d3 top y=260 → goal y=260-37=223
@@ -262,11 +264,11 @@ class Level1 : BaseLevel
         sr.LayerDepth = 0.1f;
     }
 
-    private void AddCoins(string prefix, float[] xs, float y)
+    private void AddFish(string prefix, float[] xs, float y)
     {
         for (int i = 0; i < xs.Length; i++)
         {
-            var c = base.AddGameObject<Coin>($"{prefix}_{i}");
+            var c = base.AddGameObject<Fish>($"{prefix}_{i}");
             c.Position = new Vector2(xs[i], y);
             c.SetPlayer(player);
         }
@@ -286,7 +288,7 @@ class Level1 : BaseLevel
         ProgressionManager.Instance.CompleteLevel(
             LevelIndex,
             TimeSpan.FromMilliseconds(_timerUI.GetElapsedTime()),
-            player?.CoinCount ?? 0,
+            player?.FishCount ?? 0,
             _totalFishInLevel,
             GetLatestCheckpoint());
 
