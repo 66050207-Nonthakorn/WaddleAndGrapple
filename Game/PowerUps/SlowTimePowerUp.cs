@@ -9,7 +9,8 @@ namespace WaddleAndGrapple.Game;
 /// </summary>
 public class SlowTimePowerUp : PowerUp
 {
-    public override Color ItemColor => new Color(180, 0, 255); // ม่วงสดใส
+    public override Color ItemColor => new Color(180, 0, 255);
+    protected override string SpriteName => "Items/SlowTime";
 
     public SlowTimePowerUp()
     {

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using WaddleAndGrapple.Engine.Components;
 using WaddleAndGrapple.Engine.Managers;
 using WaddleAndGrapple.Game.Example;
@@ -23,6 +24,9 @@ public abstract class PowerUp : Collectible
     /// <summary>สีของ item บน map และ HUD bar</summary>
     public virtual Color ItemColor => Color.Magenta;
 
+    /// <summary>ชื่อ texture ใน ResourceManager (spritesheet 8 frames, 16×16 px/frame)</summary>
+    protected abstract string SpriteName { get; }
+
     /// <summary>ระยะเวลา effect รวม (วินาที)</summary>
     protected float Duration;
     public float TotalDuration  => Duration;
@@ -34,13 +38,23 @@ public abstract class PowerUp : Collectible
     {
         base.Initialize(); // ตั้ง collider
 
-        // pixel texture ขนาด 1×1 → ยืดด้วย Scale ให้เป็น 32×32 px
-        // TODO (Phase 9): ใส่ sprite จริง
-        Scale      = new Vector2(32, 32);
-        var sr     = AddComponent<SpriteRenderer>();
-        sr.Texture    = ResourceManager.Instance.GetTexture("pixel");
-        sr.Tint       = ItemColor;
-        sr.LayerDepth = 0.5f;
+        Scale = new Vector2(2f, 2f);
+
+        var sheet  = ResourceManager.Instance.GetTexture(SpriteName);
+        const int FrameSize = 16;
+        const int FrameCount = 8;
+        var frames = new List<Microsoft.Xna.Framework.Rectangle>();
+        for (int i = 0; i < FrameCount; i++)
+            frames.Add(new Microsoft.Xna.Framework.Rectangle(i * FrameSize, 0, FrameSize, FrameSize));
+
+        var anim     = new Animation(sheet, frames, frameDuration: 0.1f, isLooping: true);
+        var animator = AddComponent<Animator>();
+        animator.AddAnimation("idle", anim);
+        animator.Play("idle");
+
+        // SpriteRenderer is created by Animator.Initialize — set layer depth
+        var sr = GetComponent<SpriteRenderer>();
+        if (sr != null) sr.LayerDepth = 0.5f;
     }
 
     /// <summary>เมื่อเก็บ → ส่งต่อ effect ให้ Player จัดการ</summary>

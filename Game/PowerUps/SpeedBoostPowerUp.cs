@@ -9,7 +9,8 @@ namespace WaddleAndGrapple.Game;
 /// </summary>
 public class SpeedBoostPowerUp : PowerUp
 {
-    public override Color ItemColor => new Color(255, 160, 0); // ส้มสดใส
+    public override Color ItemColor => new Color(255, 160, 0);
+    protected override string SpriteName => "Items/SpeedBoost";
 
     private const float Multiplier = 1.5f;
 

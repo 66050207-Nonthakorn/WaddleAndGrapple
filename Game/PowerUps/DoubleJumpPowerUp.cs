@@ -10,7 +10,8 @@ namespace WaddleAndGrapple.Game;
 /// </summary>
 public class DoubleJumpPowerUp : PowerUp
 {
-    public override Color ItemColor => new Color(0, 220, 255); // ฟ้าสว่าง
+    public override Color ItemColor => new Color(0, 220, 255);
+    protected override string SpriteName => "Items/DoubleJump";
 
     public DoubleJumpPowerUp()
     {
