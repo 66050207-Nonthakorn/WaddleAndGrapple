@@ -20,6 +20,9 @@ public class GoalFlag : GameObject
 {
     public Player Player { get; set; }
 
+    /// <summary>เรียกเมื่อ overlay fade in เสร็จ — ให้ level เรียก CompleteLevel() ตรงนี้</summary>
+    public Action OnComplete { get; set; }
+
     private GoalFlagRenderer _renderer;
 
     public override void Initialize()
@@ -29,7 +32,7 @@ public class GoalFlag : GameObject
 
     public override void Update(GameTime gameTime)
     {
-        _renderer?.Tick(gameTime, Player, Position);
+        _renderer?.Tick(gameTime, Player, Position, OnComplete);
     }
 }
 
@@ -49,8 +52,9 @@ public class GoalFlagRenderer : Component
     private Texture2D  _triangleTex;
     private SpriteFont _font;
 
-    private bool  _reached    = false;
-    private float _overlayAlpha = 0f;
+    private bool  _reached       = false;
+    private float _overlayAlpha  = 0f;
+    private bool  _completeFired = false;
 
     private static readonly Color PoleColor = new(160, 130, 80);
     private static readonly Color FlagColor = new(220, 40,  40);
@@ -64,7 +68,7 @@ public class GoalFlagRenderer : Component
     }
 
     // เรียกจาก GoalFlag.Update() ทุก frame
-    public void Tick(GameTime gameTime, Player player, Vector2 pos)
+    public void Tick(GameTime gameTime, Player player, Vector2 pos, Action onComplete)
     {
         if (_reached)
         {
@@ -73,7 +77,16 @@ public class GoalFlagRenderer : Component
                 WorldTime.Freeze();
 
             if (WorldTime.IsFrozen)
+            {
                 _overlayAlpha = Math.Min(1f, _overlayAlpha + (float)gameTime.ElapsedGameTime.TotalSeconds * 2f);
+
+                // overlay fade in เสร็จแล้ว → เรียก CompleteLevel()
+                if (_overlayAlpha >= 1f && !_completeFired)
+                {
+                    _completeFired = true;
+                    onComplete?.Invoke();
+                }
+            }
             return;
         }
 

@@ -3,6 +3,7 @@ using WaddleAndGrapple.Engine.Components;
 using WaddleAndGrapple.Engine.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using System.Collections.Generic;
 using GamePlayer = WaddleAndGrapple.Game.Player;
 using GameEnemy = WaddleAndGrapple.Game.Enemy;
@@ -156,7 +157,7 @@ class MainScene : Scene
         sawA.MoveRange         = 220f;
         sawA.MoveSpeed         = 70f;
         sawA.MoveHorizontal    = true;
-        sawA.BladeSize         = 50f;
+        sawA.Size              = SawSize.Large;
         sawA.SpriteTextureName = "Traps/Saw/LargeSaw";
         sawA.SpriteTint        = Color.White;
         sawA.Placement         = SawPlacement.FloorMounted;
@@ -178,8 +179,8 @@ class MainScene : Scene
         {
             var s = base.AddGameObject<SpikeTrap>($"spk_b_{nx}");
             s.Position          = new Vector2(nx, 450);
-            s.Origin            = SpikeOrigin.Floor;
-            s.SpikeLength       = 45f;
+            s.RotationAngle     = 0f;   // floor (spikes point up)
+            s.SpikeTiles        = 3;
             s.PhaseOffset       = ph;
             s.SpriteTextureName = "Traps/Spike/Spike";
             s.SpriteTint        = Color.White;
@@ -191,8 +192,8 @@ class MainScene : Scene
         {
             var s = base.AddGameObject<SpikeTrap>($"spk_c_{nx}");
             s.Position          = new Vector2(nx, 600);
-            s.Origin            = SpikeOrigin.Floor;
-            s.SpikeLength       = 50f;
+            s.RotationAngle     = 0f;
+            s.SpikeTiles        = 3;
             s.PhaseOffset       = ph;
             s.SpriteTextureName = "Traps/Spike/Spike";
             s.SpriteTint        = Color.White;
@@ -204,8 +205,8 @@ class MainScene : Scene
         {
             var s = base.AddGameObject<SpikeTrap>($"spk_cc_{nx}");
             s.Position          = new Vector2(nx, 280);
-            s.Origin            = SpikeOrigin.Ceiling;
-            s.SpikeLength       = 45f;
+            s.RotationAngle     = MathF.PI;   // ceiling (spikes point down)
+            s.SpikeTiles        = 3;
             s.PhaseOffset       = ph;
             s.SpriteTextureName = "Traps/Spike/Spike";
             s.SpriteTint        = Color.White;
@@ -215,8 +216,8 @@ class MainScene : Scene
         // ── Zone D: wall spike pair ───────────────────────────────────────────
         var swL = base.AddGameObject<SpikeTrap>("spk_wL");
         swL.Position          = new Vector2(1948, 428);
-        swL.Origin            = SpikeOrigin.LeftWall;
-        swL.SpikeLength       = 55f;
+        swL.RotationAngle     = MathF.PI / 2f;   // left wall (spikes point right)
+        swL.SpikeTiles        = 3;
         swL.PhaseOffset       = 0f;
         swL.SpriteTextureName = "Traps/Spike/Spike";
         swL.SpriteTint        = Color.White;
@@ -224,8 +225,8 @@ class MainScene : Scene
 
         var swR = base.AddGameObject<SpikeTrap>("spk_wR");
         swR.Position          = new Vector2(1995, 428);
-        swR.Origin            = SpikeOrigin.RightWall;
-        swR.SpikeLength       = 55f;
+        swR.RotationAngle     = -MathF.PI / 2f;  // right wall (spikes point left)
+        swR.SpikeTiles        = 3;
         swR.PhaseOffset       = 0.9f;
         swR.SpriteTextureName = "Traps/Spike/Spike";
         swR.SpriteTint        = Color.White;
@@ -237,7 +238,7 @@ class MainScene : Scene
         sawD.MoveRange         = 160f;
         sawD.MoveSpeed         = 165f;
         sawD.MoveHorizontal    = true;
-        sawD.BladeSize         = 50f;
+        sawD.Size              = SawSize.Large;
         sawD.SpriteTextureName = "Traps/Saw/LargeSaw";
         sawD.SpriteTint        = Color.White;
         sawD.Placement         = SawPlacement.FloorMounted;
@@ -257,8 +258,8 @@ class MainScene : Scene
         {
             var s = base.AddGameObject<SpikeTrap>($"spk_d_{nx}");
             s.Position          = new Vector2(nx, 450);
-            s.Origin            = SpikeOrigin.Floor;
-            s.SpikeLength       = 45f;
+            s.RotationAngle     = 0f;
+            s.SpikeTiles        = 3;
             s.PhaseOffset       = ph;
             s.SpriteTextureName = "Traps/Spike/Spike";
             s.SpriteTint        = Color.White;
