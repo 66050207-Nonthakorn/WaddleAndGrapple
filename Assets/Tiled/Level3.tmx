@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="320" height="80" tilewidth="16" tileheight="16" infinite="0" nextlayerid="5" nextobjectid="60">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="320" height="80" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="101">
  <editorsettings>
   <export target="Level3.tmj" format="json"/>
  </editorsettings>
@@ -103,7 +103,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="2" name="Room" visible="0">
+ <objectgroup id="2" name="Room">
   <object id="1" name="Room1" x="256" y="0" width="1440" height="540"/>
   <object id="2" name="Room2" x="1696" y="0" width="2400" height="540"/>
   <object id="4" name="Room3" x="4096" y="0" width="960" height="1080"/>
@@ -557,6 +557,89 @@
     <property name="RetractDuration" type="float" value="0.1"/>
     <property name="SpikeTiles" type="int" value="1"/>
    </properties>
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="5" name="Collectable">
+  <object id="74" type="Fish" x="1008" y="448">
+   <point/>
+  </object>
+  <object id="75" type="Fish" x="1488" y="448">
+   <point/>
+  </object>
+  <object id="76" type="Fish" x="2256" y="464">
+   <point/>
+  </object>
+  <object id="77" type="Fish" x="2272" y="256">
+   <point/>
+  </object>
+  <object id="78" type="Fish" x="2720" y="384">
+   <point/>
+  </object>
+  <object id="79" type="Fish" x="3136" y="448">
+   <point/>
+  </object>
+  <object id="80" type="Fish" x="3600" y="400">
+   <point/>
+  </object>
+  <object id="81" type="Fish" x="4512" y="192">
+   <point/>
+  </object>
+  <object id="82" type="Fish" x="4288" y="432">
+   <point/>
+  </object>
+  <object id="83" type="Fish" x="4960" y="512">
+   <point/>
+  </object>
+  <object id="84" type="Fish" x="4144" y="944">
+   <point/>
+  </object>
+  <object id="85" type="SlowTimePowerUp" x="880" y="288">
+   <point/>
+  </object>
+  <object id="86" type="SlowTimePowerUp" x="2320" y="128">
+   <point/>
+  </object>
+  <object id="87" type="SlowTimePowerUp" x="3072" y="128">
+   <point/>
+  </object>
+  <object id="88" type="SlowTimePowerUp" x="4176" y="496">
+   <point/>
+  </object>
+  <object id="89" type="SlowTimePowerUp" x="4864" y="112">
+   <point/>
+  </object>
+  <object id="90" type="SlowTimePowerUp" x="1520" y="448">
+   <point/>
+  </object>
+  <object id="91" type="DoubleJumpPowerUp" x="1024" y="240">
+   <point/>
+  </object>
+  <object id="92" type="DoubleJumpPowerUp" x="3984" y="224">
+   <point/>
+  </object>
+  <object id="93" type="SpeedBoostPowerUp" x="4176" y="944">
+   <point/>
+  </object>
+  <object id="94" type="SpeedBoostPowerUp" x="4320" y="432">
+   <point/>
+  </object>
+  <object id="95" type="SpeedBoostPowerUp" x="4176" y="512">
+   <point/>
+  </object>
+  <object id="96" type="SpeedBoostPowerUp" x="2448" y="304">
+   <point/>
+  </object>
+  <object id="97" type="SpeedBoostPowerUp" x="1840" y="368">
+   <point/>
+  </object>
+  <object id="98" type="SpeedBoostPowerUp" x="1520" y="432">
+   <point/>
+  </object>
+  <object id="99" type="DoubleJumpPowerUp" x="1936" y="320">
+   <point/>
+  </object>
+  <object id="100" type="DoubleJumpPowerUp" x="3344" y="336">
    <point/>
   </object>
  </objectgroup>
