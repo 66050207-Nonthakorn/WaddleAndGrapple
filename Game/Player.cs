@@ -53,7 +53,7 @@ public class Player : GameObject
     private const float TempGroundY = 400f;
 
     // ── Phase 7: Death ────────────────────────────────────────────────────────
-    private const float DefaultFallDeathY = 480f;   // ขอบล่างหน้าจอ → ตาย
+    private const float DefaultFallDeathY = 600f;   // ขอบล่างหน้าจอ → ตาย
     private const float DefaultScreenLeft = 0f;     // ขอบซ้าย
     private const float DefaultScreenRight = 4800f; // ขอบขวาของ demo scene
     private float _fallDeathY = DefaultFallDeathY;
@@ -1010,12 +1010,12 @@ public class Player : GameObject
     // ── API สำหรับ Level (Member 4) ───────────────────────────────────────────
     public void SetSolids(List<Rectangle> solids) => _solidRects = solids;
     public IReadOnlyList<Rectangle> Solids => _solidRects;
-    public void SetWorldBounds(float left, float right, float fallDeathY)
-    {
-        _screenLeft = left;
-        _screenRight = right;
-        _fallDeathY = fallDeathY;
-    }
+    // public void SetWorldBounds(float left, float right, float fallDeathY)
+    // {
+    //     _screenLeft = left;
+    //     _screenRight = right;
+    //     _fallDeathY = fallDeathY;
+    // }
 
     private List<Enemy> _enemies = [];
     public void SetEnemies(List<Enemy> enemies)

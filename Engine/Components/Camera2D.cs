@@ -73,6 +73,8 @@ public class Camera2D : Component
     // Section clamp — camera X cannot go outside this range (set by CheckpointManager section)
     public float? ClampMinX { get; set; }
     public float? ClampMaxX { get; set; }
+    public float? ClampMinY { get; set; }
+    public float? ClampMaxY { get; set; }
 
     public Camera2D()
     {
@@ -124,7 +126,11 @@ public class Camera2D : Component
             _position.X = Math.Max(_position.X, ClampMinX.Value);
         if (ClampMaxX.HasValue)
             _position.X = Math.Min(_position.X, ClampMaxX.Value);
-        if (ClampMinX.HasValue || ClampMaxX.HasValue)
+        if (ClampMinY.HasValue)
+            _position.Y = Math.Max(_position.Y, ClampMinY.Value);
+        if (ClampMaxY.HasValue)
+            _position.Y = Math.Min(_position.Y, ClampMaxY.Value);
+        if (ClampMinX.HasValue || ClampMaxX.HasValue || ClampMinY.HasValue || ClampMaxY.HasValue)
             _isViewTransformationDirty = true;
 
         // Apply bounds constraints

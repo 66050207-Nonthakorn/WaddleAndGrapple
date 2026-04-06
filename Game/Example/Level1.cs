@@ -116,10 +116,14 @@ class Level1 : BaseLevel
         }
 
         var tiledMap = mapResult.Map;
-        player.SetWorldBounds(
-            left: 0f,
-            right: tiledMap.Width * tiledMap.TileWidth,
-            fallDeathY: (tiledMap.Height * tiledMap.TileHeight) + 160f);
+        // player.SetWorldBounds(
+        //     left: 0f,
+        //     right: tiledMap.Width * tiledMap.TileWidth,
+        //     fallDeathY: (tiledMap.Height * tiledMap.TileHeight) + 1f);
+
+        // Set map dimensions for camera bounds clamping
+        MapWidth = (int)(tiledMap.Width * tiledMap.TileWidth);
+        MapHeight = (int)(tiledMap.Height * tiledMap.TileHeight);
 
         // ══════════════════════════════════════════════════════════════════════
         // CHECKPOINTS / SECTIONS — อ่านจาก Room layer ใน Tiled
@@ -138,6 +142,8 @@ class Level1 : BaseLevel
                 Id              = i,
                 LeftBound       = left,
                 RightBound      = right,
+                TopBound        = (int)r.Y,
+                BottomBound     = (int)(r.Y + r.Height),
                 LeftSpawnPoint  = i == 0 ? startSpawn : new Vector2(left + 20, 450),
                 RightSpawnPoint = new Vector2(right - 20, 450),
             });

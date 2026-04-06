@@ -55,7 +55,7 @@ public class Tilemap : Component
             {
                 int gid = MapData[y, x];
                 if (gid <= 0 && gid == -1) continue; // Legacy empty
-                if (gid == 0) continue; // New empty
+                // if (gid == 0) continue; // New empty
 
                 Texture2D tex = null;
                 int localId = gid;
