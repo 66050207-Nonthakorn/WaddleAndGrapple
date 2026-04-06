@@ -15,7 +15,7 @@ namespace WaddleAndGrapple.Game;
 ///   "LaserTrap"         → LaserTrap
 ///   "SpikeTrap"         → SpikeTrap
 ///   "Enemy"             → Enemy
-///   "Coin"              → Coin
+///   "Fish"              → Fish
 ///   "GoalFlag"          → GoalFlag
 ///   "DoubleJumpPowerUp" → DoubleJumpPowerUp
 ///   "SpeedBoostPowerUp" → SpeedBoostPowerUp
@@ -58,7 +58,7 @@ namespace WaddleAndGrapple.Game;
 ///     patrolSpeed        (float)                                    default 100
 ///     chaseSpeed         (float)                                    default 200
 ///
-///   Coin:
+///   Fish:
 ///     value              (int)    - coins added on pickup           default 1
 ///
 ///   GoalFlag: (no extra properties needed)
@@ -94,7 +94,7 @@ public class GameMapLoader
         RegisterLaserTrap();
         RegisterSpikeTrap();
         RegisterEnemy();
-        RegisterCoin();
+        RegisterFish();
         RegisterGoalFlag();
         RegisterDoubleJumpPowerUp();
         RegisterSpeedBoostPowerUp();
@@ -107,7 +107,6 @@ public class GameMapLoader
         {
             trap.MoveRange             = obj.FloatProp("moveRange",     trap.MoveRange);
             trap.MoveSpeed             = obj.FloatProp("moveSpeed",     trap.MoveSpeed);
-            trap.BladeSize             = obj.FloatProp("bladeSize",     trap.BladeSize);
             trap.MoveHorizontal        = obj.BoolProp ("moveHorizontal",trap.MoveHorizontal);
             trap.Placement             = obj.EnumProp ("placement",     trap.Placement);
             trap.AnimationColumns      = obj.IntProp  ("animationColumns", trap.AnimationColumns);
@@ -138,8 +137,6 @@ public class GameMapLoader
     {
         _loader.Register<SpikeTrap>("SpikeTrap", (spike, obj) =>
         {
-            spike.Origin          = obj.EnumProp ("origin",          spike.Origin);
-            spike.SpikeLength     = obj.FloatProp("spikeLength",     spike.SpikeLength);
             spike.PhaseOffset     = obj.FloatProp("phaseOffset",     spike.PhaseOffset);
             spike.ExtendDuration  = obj.FloatProp("extendDuration",  spike.ExtendDuration);
             spike.HoldDuration    = obj.FloatProp("holdDuration",    spike.HoldDuration);
@@ -166,9 +163,9 @@ public class GameMapLoader
         });
     }
 
-    private void RegisterCoin()
+    private void RegisterFish()
     {
-        _loader.Register<Coin>("Coin", (coin, obj) =>
+        _loader.Register<Fish>("Fish", (coin, obj) =>
         {
             coin.Value = obj.IntProp("value", coin.Value);
             coin.SetPlayer(_player);

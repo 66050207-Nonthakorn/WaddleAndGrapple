@@ -60,7 +60,7 @@ public class Game1 : Microsoft.Xna.Framework.Game
         SceneManager.Instance.AddScene<Level3OutroCutscene>(Level3OutroCutscene.SceneName);
         SceneManager.Instance.AddScene<LevelComplete>("levelcomplete");
         
-        SceneManager.Instance.AddScene<GameMapLoaderDemo>("tileloaderdemo");
+        // SceneManager.Instance.AddScene<GameMapLoaderDemo>("tileloaderdemo");
 
         base.Initialize();
     }
@@ -111,7 +111,7 @@ public class Game1 : Microsoft.Xna.Framework.Game
 
         ProgressionManager.Instance.LoadFromFile(ProgressionManager.Instance.SaveFilePath);
 
-        SceneManager.Instance.LoadScene("tileloaderdemo");
+        SceneManager.Instance.LoadScene("main");
     }
 
     private void OnClientSizeChanged(object sender, EventArgs e)
