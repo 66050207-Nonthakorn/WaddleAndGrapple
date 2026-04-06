@@ -27,7 +27,7 @@ A 2D platformer built with **MonoGame** (.NET 9) featuring a penguin protagonist
 - Checkpoint system with per-section respawn points
 - Parallax background layers
 - Cutscenes and level select screen
-- Progression saved to disk (`Game/Progression.json`)
+- Progression saved to disk (`Game/Save/Progression.json`)
 
 ---
 
