@@ -20,24 +20,9 @@ class Level3 : BaseLevel
     public override void Setup()
     {
         LevelIndex = 3;
-        SetTotalFish(0);
+        SetTotalFish(11);
 
         AudioManager.Instance.PlaySong("Song/Level3");
-
-        // // Create tilemap first
-        // tilemapObject = base.AddGameObject<GameObject>("tilemap");
-        // var tilemap = tilemapObject.AddComponent<Tilemap>();
-        // tilemap.Tileset = ResourceManager.Instance.GetTexture("Tiles/tileset");
-        // tilemap.SourceTileSize = 75;
-        // tilemap.DestinationTileSize = 150;
-        // tilemap.GameObject.Scale = new Vector2(1f, 1f);
-        // tilemap.MapData = new int[,]
-        // {
-        //     { 3, 3, 3, 3, 3, 3 },
-        // };
-
-        // var tileCollider = tilemapObject.AddComponent<TileCollider>();
-        // tileCollider.SetSolid(0, 1, 2, 3, 4, 5);
 
         // Create camera
         cameraObject = base.AddGameObject<GameObject>("camera");
@@ -80,7 +65,12 @@ class Level3 : BaseLevel
         {
             var tileCollider = mapResult.Tilemaps[0].GetComponent<TileCollider>();
             if (tileCollider != null)
-                player.SetSolids(tileCollider.GetSolidRects());
+            {
+                var solids = tileCollider.GetSolidRects();
+                player.SetSolids(solids);
+                foreach (var enemy in mapResult.GetSpawned<Enemy>())
+                    enemy.SetSolids(solids);
+            }
         }
 
         var tiledMap = mapResult.Map;

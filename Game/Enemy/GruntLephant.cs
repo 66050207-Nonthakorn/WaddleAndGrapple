@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework;
 namespace WaddleAndGrapple.Game;
 
 // ── State Machine ─────────────────────────────────────────────────────────────
-public enum EnemyState
+public enum GruntLephantState
 {
     Idle,
     Patrolling,
@@ -25,7 +25,7 @@ public enum EnemyState
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-public class Enemy : GameObject
+public class GruntLephant : Enemy
 {
     // ── Physics Constants ─────────────────────────────────────────────────────
     private const float Gravity      = 1200f;  // px/s²
@@ -36,7 +36,7 @@ public class Enemy : GameObject
     private const int EnemyHeight = 60; // เปลี่ยนเป็น 120 พอทำ Level จริงเสร็จ
 
     // ── Temporary Ground (ลบเมื่อ tiles พร้อม) ───────────────────────────────
-    private const float TempGroundY = 400f;
+    // private const float TempGroundY = 400f;
 
     // ── Sprite Scale ──────────────────────────────────────────────────────────
     public const float DisplayScale = 1f; // เปลี่ยนเป็น 2f พอทำ Level จริงเสร็จ
@@ -70,7 +70,7 @@ public class Enemy : GameObject
     public int  FacingDirection { get; set; } = 1; // +1 = ขวา, -1 = ซ้าย
 
     // ── State Machine ─────────────────────────────────────────────────────────
-    public EnemyState State { get; private set; } = EnemyState.Idle;
+    public GruntLephantState State { get; private set; } = GruntLephantState.Idle;
 
     // ── Spawn / Patrol ────────────────────────────────────────────────────────
     private Vector2 _spawnPosition;
@@ -102,7 +102,7 @@ public class Enemy : GameObject
     // ── Death ─────────────────────────────────────────────────────────────────
     // 7 frames × 0.13 s — ตรงกับ dead animation ที่ลงทะเบียนใน Initialize
     private const float DeadAnimDuration = 7 * 0.13f;
-    private float _deadTimer;
+    // private float _deadTimer;
 
     // Stunned
     private const float StunnedAnimDuration = 5 * 0.10f * 10;
@@ -123,7 +123,7 @@ public class Enemy : GameObject
         // TODO: แทนที่ "Enemy/Enemy-SpriteSheet" ด้วย path spritesheet จริง
         //       และปรับ rows/columns/totalFrames ให้ตรงกับไฟล์
         var f = new AnimationFactory(
-            ResourceManager.Instance.GetTexture("elephant-animation"),
+            ResourceManager.Instance.GetTexture("Enemy1-SpriteSheet"),
             rows: 8, columns: 8
         );
 
@@ -137,6 +137,7 @@ public class Enemy : GameObject
         _animator.AddAnimation("stunned",    f.CreateFromRow(row: 6, totalFrames: 5, frameDuration: 0.10f));
         _animator.AddAnimation("gettingup",  f.CreateFromRow(row: 7, totalFrames: 4, frameDuration: 0.10f, isLooping: false));
 
+        _animator.UseBottomLeftAnchor = true;
         _animator.Play("standing");
 
         _collider = AddComponent<EnemyBoxCollider>();
@@ -149,7 +150,9 @@ public class Enemy : GameObject
         float dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         if (WorldTime.IsFrozen) return;
-        if (State == EnemyState.Dead)
+
+        // Dead: นับ timer รอ animation จบ แล้ว deactivate
+        if (State == GruntLephantState.Dead)
         {
             // dead animation จบแล้ว → ลบออกจาก scene
             if (_animator.IsCurrentAnimationFinished && SceneKey != null)
@@ -194,46 +197,46 @@ public class Enemy : GameObject
 
         // Leash: ออกไกลเกิน LeashRange → กลับ spawn (ไม่ interrupt ขณะกลางอากาศหรือลุกขึ้น)
         if (distToSpawn > LeashRange
-            && State != EnemyState.ReturningToSpawn
-            && State != EnemyState.FallingDown
-            && State != EnemyState.GettingUp)
+            && State != GruntLephantState.ReturningToSpawn
+            && State != GruntLephantState.FallingDown
+            && State != GruntLephantState.GettingUp)
         {
-            ChangeState(EnemyState.ReturningToSpawn);
+            ChangeState(GruntLephantState.ReturningToSpawn);
         }
 
         switch (State)
         {
             // ── Idle: เริ่ม patrol ทันที ──────────────────────────────────────
-            case EnemyState.Idle:
-                ChangeState(EnemyState.Patrolling);
+            case GruntLephantState.Idle:
+                ChangeState(GruntLephantState.Patrolling);
                 break;
 
             // ── Patrol: เดินไปมาในรัศมี PatrolRadius ─────────────────────────
-            case EnemyState.Patrolling:
+            case GruntLephantState.Patrolling:
                 if (playerInSight)
                 {
-                    ChangeState(EnemyState.Taunting);
+                    ChangeState(GruntLephantState.Taunting);
                     break;
                 }
                 HandlePatrol();
                 break;
 
             // ── Taunting: หยุด หันหา player เล่น emote แล้วค่อย chase ─────────
-            case EnemyState.Taunting:
+            case GruntLephantState.Taunting:
                 VelocityX = 0f;
                 FacingDirection = _player.Position.X > Position.X ? 1 : -1;
                 if (_tauntTimer <= 0f)
-                    ChangeState(EnemyState.Chasing);
+                    ChangeState(GruntLephantState.Chasing);
                 break;
 
             // ── Chase: วิ่งตาม player ─────────────────────────────────────────
-            case EnemyState.Chasing:
+            case GruntLephantState.Chasing:
                 if (!playerInSight)
                 {
                     // ยังอยู่ในเขต patrol → กลับ patrol; ออกนอกเขต → คืน spawn
                     ChangeState(distToSpawn <= PatrolRadius
-                        ? EnemyState.Patrolling
-                        : EnemyState.ReturningToSpawn);
+                        ? GruntLephantState.Patrolling
+                        : GruntLephantState.ReturningToSpawn);
                     break;
                 }
                 if (distToPlayer <= AttackRange)
@@ -245,39 +248,39 @@ public class Enemy : GameObject
                 break;
 
             // ── Attacking: หยุดนิ่ง รอ animation จบ ─────────────────────────
-            case EnemyState.Attacking:
+            case GruntLephantState.Attacking:
                 VelocityX = 0f;
                 if (_attackAnimTimer <= 0f)
-                    ChangeState(playerInSight ? EnemyState.Chasing : EnemyState.Patrolling);
+                    ChangeState(playerInSight ? GruntLephantState.Chasing : GruntLephantState.Patrolling);
                 break;
 
             // ── Falling: physics จัดการ ไม่ควบคุม horizontal ──────────────────
-            case EnemyState.FallingDown:
+            case GruntLephantState.FallingDown:
                 VelocityX = 0f;
                 break;
 
             // ── Getting Up: หยุดนิ่ง รอ animation จบ → กลับ patrol ───────────
-            case EnemyState.GettingUp:
+            case GruntLephantState.GettingUp:
                 VelocityX = 0f;
                 if (_gettingUpTimer <= 0f)
-                    ChangeState(EnemyState.Patrolling);
+                    ChangeState(GruntLephantState.Patrolling);
                 break;
 
             // ── Return to Spawn ───────────────────────────────────────────────
-            case EnemyState.ReturningToSpawn:
+            case GruntLephantState.ReturningToSpawn:
                 HandleReturnToSpawn();
                 if (distToSpawn < 10f)
                 {
                     VelocityX = 0f;
-                    ChangeState(EnemyState.Patrolling);
+                    ChangeState(GruntLephantState.Patrolling);
                 }
                 break;
 
             // Stunned
-            case EnemyState.Stunned:
+            case GruntLephantState.Stunned:
                 VelocityX = 0f;
                 if (_stunnedTimer <= 0f)
-                    ChangeState(EnemyState.Patrolling);
+                    ChangeState(GruntLephantState.Patrolling);
                 break;
         }
     }
@@ -328,7 +331,7 @@ public class Enemy : GameObject
 
         _attackTimer     = AttackCooldown;
         _attackAnimTimer = AttackAnimDuration;
-        ChangeState(EnemyState.Attacking);
+        ChangeState(GruntLephantState.Attacking);
 
         // เผชิญหน้ากับ player ก่อน attack
         FacingDirection = _player.Position.X > Position.X ? 1 : -1;
@@ -412,29 +415,29 @@ public class Enemy : GameObject
     {
         switch (State)
         {
-            case EnemyState.Patrolling:
+            case GruntLephantState.Patrolling:
                 _animator.Play(_patrolWaitTimer > 0f ? "standing" : "walk");
                 break;
-            case EnemyState.Taunting:
+            case GruntLephantState.Taunting:
                 _animator.Play("emote");
                 break;
-            case EnemyState.ReturningToSpawn:
-            case EnemyState.Chasing:
+            case GruntLephantState.ReturningToSpawn:
+            case GruntLephantState.Chasing:
                 _animator.Play("run");
                 break;
-            case EnemyState.Attacking:
+            case GruntLephantState.Attacking:
                 _animator.Play("attack");
                 break;
-            case EnemyState.FallingDown:
+            case GruntLephantState.FallingDown:
                 _animator.Play("freefall");
                 break;
-            case EnemyState.GettingUp:
+            case GruntLephantState.GettingUp:
                 _animator.Play("gettingup");
                 break;
-            case EnemyState.Dead:
+            case GruntLephantState.Dead:
                 _animator.Play("dead");
                 break;
-            case EnemyState.Stunned:
+            case GruntLephantState.Stunned:
                 _animator.Play("stunned");
                 break;
             default:
@@ -452,17 +455,17 @@ public class Enemy : GameObject
         switch (State)
         {
             // เดินตกขอบ → เข้า FallingDown
-            case EnemyState.Patrolling:
-            case EnemyState.Chasing:
-            case EnemyState.ReturningToSpawn:
+            case GruntLephantState.Patrolling:
+            case GruntLephantState.Chasing:
+            case GruntLephantState.ReturningToSpawn:
                 if (!IsGrounded)
-                    ChangeState(EnemyState.FallingDown);
+                    ChangeState(GruntLephantState.FallingDown);
                 break;
 
             // แตะพื้นหลังตก → เข้า GettingUp
-            case EnemyState.FallingDown:
+            case GruntLephantState.FallingDown:
                 if (IsGrounded)
-                    ChangeState(EnemyState.GettingUp);
+                    ChangeState(GruntLephantState.GettingUp);
                 break;
         }
     }
@@ -491,14 +494,14 @@ public class Enemy : GameObject
 
             if (VelocityX > 0f)
             {
-                Position = new Vector2(solid.Left - EnemyWidth / 2f, Position.Y);
-                // ชนผนังขณะ patrol → สลับทิศ
-                if (State == EnemyState.Patrolling) _patrolDirection = -1;
+                // Position.X = ขอบซ้าย → ดัน left ให้ชิด solid.Left
+                Position = new Vector2(solid.Left - EnemyWidth, Position.Y);
+                if (State == GruntLephantState.Patrolling) _patrolDirection = -1;
             }
             else if (VelocityX < 0f)
             {
-                Position = new Vector2(solid.Right + EnemyWidth / 2f, Position.Y);
-                if (State == EnemyState.Patrolling) _patrolDirection = 1;
+                Position = new Vector2(solid.Right, Position.Y);
+                if (State == GruntLephantState.Patrolling) _patrolDirection = 1;
             }
             VelocityX = 0f;
             UpdateColliderBounds();
@@ -518,36 +521,39 @@ public class Enemy : GameObject
 
             if (VelocityY > 0f)
             {
-                Position   = new Vector2(Position.X, solid.Top - EnemyHeight / 2f);
+                // Position.Y = ขอบล่าง → ลงมาแตะ solid.Top
+                Position   = new Vector2(Position.X, solid.Top);
                 IsGrounded = true;
             }
             else if (VelocityY < 0f)
             {
-                Position = new Vector2(Position.X, solid.Bottom + EnemyHeight / 2f);
+                // ชนเพดาน → ขอบบน (Position.Y - EnemyHeight) = solid.Bottom
+                Position = new Vector2(Position.X, solid.Bottom + EnemyHeight);
             }
             VelocityY = 0f;
             UpdateColliderBounds();
         }
 
         // ── Temp Ground ───────────────────────────────────────────────────────
-        if (_solidRects.Count == 0)
-        {
-            float groundTopY = TempGroundY - EnemyHeight / 2f;
-            if (Position.Y >= groundTopY)
-            {
-                Position   = new Vector2(Position.X, groundTopY);
-                VelocityY  = 0f;
-                IsGrounded = true;
-            }
-        }
+        // if (_solidRects.Count == 0)
+        // {
+        //     float groundTopY = TempGroundY - EnemyHeight / 2f;
+        //     if (Position.Y >= groundTopY)
+        //     {
+        //         Position   = new Vector2(Position.X, groundTopY);
+        //         VelocityY  = 0f;
+        //         IsGrounded = true;
+        //     }
+        // }
     }
 
     private void UpdateColliderBounds()
     {
         if (_collider == null) return;
+        // Position = มุมล่างซ้ายของ sprite/collider
         _collider.Bounds = new Rectangle(
-            (int)(Position.X - EnemyWidth  / 2f),
-            (int)(Position.Y - EnemyHeight / 2f),
+            (int)Position.X,
+            (int)(Position.Y - EnemyHeight),
             EnemyWidth,
             EnemyHeight
         );
@@ -557,25 +563,25 @@ public class Enemy : GameObject
     // State Machine
     // ══════════════════════════════════════════════════════════════════════════
 
-    private void ChangeState(EnemyState newState)
+    private void ChangeState(GruntLephantState newState)
     {
         if (State == newState) return;
 
         switch (newState)
         {
-            case EnemyState.Patrolling:
+            case GruntLephantState.Patrolling:
                 _patrolWaitTimer = 0f;
                 break;
-            case EnemyState.Taunting:
+            case GruntLephantState.Taunting:
                 _tauntTimer = TauntAnimDuration;
                 break;
-            case EnemyState.GettingUp:
+            case GruntLephantState.GettingUp:
                 _gettingUpTimer = GettingUpAnimDuration;
                 break;
-            case EnemyState.Dead:
-                _deadTimer = DeadAnimDuration;
-                break;
-            case EnemyState.Stunned:
+            // case GruntLephantState.Dead:
+            //     _deadTimer = DeadAnimDuration;
+            //     break;
+            case GruntLephantState.Stunned:
                 _stunnedTimer = StunnedAnimDuration;
                 break;
         }
@@ -588,43 +594,41 @@ public class Enemy : GameObject
     // ══════════════════════════════════════════════════════════════════════════
 
     /// <summary>ส่ง Player reference จาก Level เพื่อให้ Enemy ติดตาม</summary>
-    public void SetPlayer(Player player) => _player = player;
+    public override void SetPlayer(Player player) => _player = player;
 
     /// <summary>ส่ง solid rectangles จาก Level (เหมือน Player.SetSolids)</summary>
-    public void SetSolids(List<Rectangle> solids) => _solidRects = solids;
+    public override void SetSolids(List<Rectangle> solids) => _solidRects = solids;
+
+    public override Rectangle ColliderBounds => _collider?.Bounds ?? Rectangle.Empty;
 
     /// <summary>key ที่ใช้ตอน AddGameObject — ตั้งจาก Level เพื่อให้ลบตัวเองออกจาก scene ได้</summary>
-    public string SceneKey { get; set; }
-
-    public Rectangle ColliderBounds => _collider?.Bounds ?? Rectangle.Empty;
 
     /// <summary>รีเซ็ต enemy กลับไปยังตำแหน่ง spawn และเริ่ม patrol ใหม่</summary>
-    public void ResetToSpawn()
+    public override void ResetToSpawn()
     {
         Position     = _spawnPosition;
         VelocityX    = 0f;
         VelocityY    = 0f;
         IsGrounded   = false;
         _patrolDirection = 1;
-        State = EnemyState.Idle; // bypass ChangeState guard so Patrolling transition fires
-        ChangeState(EnemyState.Patrolling);
+        State = GruntLephantState.Idle; // bypass ChangeState guard so Patrolling transition fires
+        ChangeState(GruntLephantState.Patrolling);
         _animator.Play("walk");
     }
 
     /// <summary>เรียกจาก hazard/trap หรือ Player เมื่อต้องการกำจัด enemy</summary>
-    public void Die()
+    public override void Die()
     {
-        if (State == EnemyState.Dead) return;
+        if (State == GruntLephantState.Dead) return;
         VelocityX = 0f;
         VelocityY = 0f;
-        ChangeState(EnemyState.Dead);
-        _animator.Play("dead"); // force ทันที — Update() จะ return early ก่อนถึง SyncAnimation
+        ChangeState(GruntLephantState.Dead);
     }
 
     public void Stun()
     {
-        if (State == EnemyState.Stunned) return;
-        ChangeState(EnemyState.Stunned);
+        if (State == GruntLephantState.Stunned) return;
+        ChangeState(GruntLephantState.Stunned);
     }
 }
 

@@ -20,7 +20,7 @@ class Level2 : BaseLevel
     public override void Setup()
     {
         LevelIndex = 2;
-        SetTotalFish(0);
+        SetTotalFish(7);
 
         AudioManager.Instance.PlaySong("Song/Level2");
 
@@ -80,7 +80,12 @@ class Level2 : BaseLevel
         {
             var tileCollider = mapResult.Tilemaps[0].GetComponent<TileCollider>();
             if (tileCollider != null)
-                player.SetSolids(tileCollider.GetSolidRects());
+            {
+                var solids = tileCollider.GetSolidRects();
+                player.SetSolids(solids);
+                foreach (var enemy in mapResult.GetSpawned<Enemy>())
+                    enemy.SetSolids(solids);
+            }
         }
 
         var tiledMap = mapResult.Map;

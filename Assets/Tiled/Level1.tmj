@@ -695,9 +695,39 @@
          "visible":false,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":7,
+         "name":"Enermy",
+         "objects":[
+                {
+                 "height":0,
+                 "id":37,
+                 "name":"",
+                 "opacity":1,
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"PatrolRadius",
+                         "type":"float",
+                         "value":120
+                        }],
+                 "rotation":0,
+                 "type":"GruntLephant",
+                 "visible":true,
+                 "width":0,
+                 "x":1072,
+                 "y":160
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":7,
- "nextobjectid":37,
+ "nextlayerid":8,
+ "nextobjectid":38,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.1",
