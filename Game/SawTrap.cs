@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 
 namespace WaddleAndGrapple.Game;
@@ -52,12 +53,13 @@ public class SawTrap : Trap
     public float AnimationFrameDuration { get; set; } = 0.06f;
 
     private Vector2 _startPosition;
-    private float   _moveDirection = 1f;
+    public float   _moveDirection = 1f;
 
     protected override void OnInitialize()
     {
         Damage = 1;
         _startPosition    = Position;
+        _moveDirection    = MoveRange >= 0f ? 1f : -1f;
 
         if (Size == SawSize.Small) // Small saws always use the Full blade spritesheet row, even if Placement is set to something else.
             AnimationColumns = 3;
@@ -79,20 +81,40 @@ public class SawTrap : Trap
     protected override void OnUpdate(GameTime gameTime)
     {
         float dt = WorldTime.Dt((float)gameTime.ElapsedGameTime.TotalSeconds);
+        float minDelta = Math.Min(0f, MoveRange);
+        float maxDelta = Math.Max(0f, MoveRange);
 
         if (MoveHorizontal)
         {
             Position = new Vector2(Position.X + MoveSpeed * _moveDirection * dt, Position.Y);
             float d = Position.X - _startPosition.X;
-            if (d >= MoveRange) _moveDirection = -1f;
-            else if (d <= 0f)   _moveDirection =  1f;
+
+            if (d >= maxDelta)
+            {
+                Position = new Vector2(_startPosition.X + maxDelta, Position.Y);
+                _moveDirection = -1f;
+            }
+            else if (d <= minDelta)
+            {
+                Position = new Vector2(_startPosition.X + minDelta, Position.Y);
+                _moveDirection = 1f;
+            }
         }
         else
         {
             Position = new Vector2(Position.X, Position.Y + MoveSpeed * _moveDirection * dt);
             float d = Position.Y - _startPosition.Y;
-            if (d >= MoveRange) _moveDirection = -1f;
-            else if (d <= 0f)   _moveDirection =  1f;
+
+            if (d >= maxDelta)
+            {
+                Position = new Vector2(Position.X, _startPosition.Y + maxDelta);
+                _moveDirection = -1f;
+            }
+            else if (d <= minDelta)
+            {
+                Position = new Vector2(Position.X, _startPosition.Y + minDelta);
+                _moveDirection = 1f;
+            }
         }
     }
 
