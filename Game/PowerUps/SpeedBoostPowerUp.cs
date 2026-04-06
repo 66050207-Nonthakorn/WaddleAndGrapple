@@ -1,5 +1,4 @@
 using Microsoft.Xna.Framework;
-using WaddleAndGrapple.Game.Example;
 
 namespace WaddleAndGrapple.Game;
 
@@ -9,7 +8,8 @@ namespace WaddleAndGrapple.Game;
 /// </summary>
 public class SpeedBoostPowerUp : PowerUp
 {
-    public override Color ItemColor => new Color(255, 160, 0); // ส้มสดใส
+    public override Color ItemColor => new Color(255, 160, 0);
+    protected override string SpriteName => "Collectibles/SpeedBoost";
 
     private const float Multiplier = 1.5f;
 
@@ -21,10 +21,12 @@ public class SpeedBoostPowerUp : PowerUp
     protected override void OnActivate(Player player)
     {
         player.MoveSpeed *= Multiplier;
+        player.SetActiveSheet("speed");
     }
 
     protected override void OnDeactivate(Player player)
     {
         player.MoveSpeed /= Multiplier;
+        player.ClearSheet("speed");
     }
 }
