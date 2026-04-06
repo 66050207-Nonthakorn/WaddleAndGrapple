@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="240" height="80" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="42">
+<map version="1.10" tiledversion="1.12.1" orientation="orthogonal" renderorder="right-down" width="240" height="80" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="45">
  <editorsettings>
   <export target="Level2.tmj" format="json"/>
  </editorsettings>
@@ -101,7 +101,10 @@
 </data>
  </layer>
  <objectgroup id="3" name="Invisible Kill Zone">
-  <object id="6" x="1264" y="1040" width="1344" height="32"/>
+  <object id="6" x="240" y="1040" width="3584" height="32"/>
+  <object id="42" x="240" y="496" width="976" height="16"/>
+  <object id="43" x="1216" y="208" width="1440" height="16"/>
+  <object id="44" x="2656" y="480" width="1152" height="16"/>
  </objectgroup>
  <objectgroup id="4" name="Trap">
   <object id="9" type="SpikeTrap" x="320" y="512">

@@ -65,8 +65,8 @@
 </data>
  </layer>
  <objectgroup id="4" name="Invisible Kill Zone">
-  <object id="5" x="720" y="512" width="208" height="48"/>
-  <object id="18" x="1296" y="-32" width="1456" height="32"/>
+  <object id="5" x="240" y="528" width="4208" height="32"/>
+  <object id="18" x="240" y="-32" width="4240" height="32"/>
  </objectgroup>
  <objectgroup id="5" name="Trap">
   <object id="8" type="SpikeTrap" x="416" y="384">
