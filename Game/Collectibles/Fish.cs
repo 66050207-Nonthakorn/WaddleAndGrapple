@@ -47,6 +47,8 @@ public class Fish : Collectible
     public override void OnCollect(Player player)
     {
         player.AddFish(Value);
+
+        AudioManager.Instance.PlaySound("SFX/CollectFish");
         // TODO (Phase 9): เล่น sound effect (AudioManager)
         // TODO (Phase 9): spawn particle
     }
