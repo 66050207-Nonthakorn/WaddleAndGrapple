@@ -422,8 +422,7 @@ public class Player : GameObject
     private const float SlideEndAnimDuration  = 0.083f * 4f; // row 12 reversed
 
     // ขยับ sprite ขึ้น (ไม่กระทบ collider) เพื่อชดเชย sprite art ที่วาดต่ำกว่า frame กลาง
-    private const float CrouchSpriteOffsetY   = -15f;
-    private const float DeadGoalSpriteOffsetY = -20f; // ← ปรับตรงนี้ถ้าต้องการขึ้น/ลงมากกว่านี้
+    private const float DeadGoalSpriteOffsetY = 0f; // ← ปรับตรงนี้ถ้าต้องการขึ้น/ลงมากกว่านี้
 
     private void SyncAnimation(float dt)
     {
@@ -432,11 +431,14 @@ public class Player : GameObject
         if (_slideAnimTimer    > 0f) _slideAnimTimer    -= dt;
         if (_slideEndAnimTimer > 0f) _slideEndAnimTimer -= dt;
 
-        bool isCrouched  = State == PlayerState.Crouching || State == PlayerState.Sliding;
-        bool isDeadGoal  = State == PlayerState.Dead       || State == PlayerState.GoalReached;
-        _spriteRenderer.DrawOffset = isCrouched ? new Vector2(0f, CrouchSpriteOffsetY)
-                                   : isDeadGoal ? new Vector2(0f, DeadGoalSpriteOffsetY)
-                                   : Vector2.Zero;
+        // ชดเชย center shift ของ collider ตอน crouch:
+        // SetCrouchHeight เลื่อน Position.Y ลง (PlayerHeight - _currentHeight)/2 px
+        // → ขยับ sprite กลับขึ้นเท่าเดิมเพื่อไม่ให้ sprite จมพื้น
+        float crouchCompensation = (_currentHeight - PlayerHeight) / 2f; // 0=ยืน, -8=ย่อ
+
+        bool isDeadGoal  = State == PlayerState.Dead || State == PlayerState.GoalReached;
+        _spriteRenderer.DrawOffset = isDeadGoal ? new Vector2(0f, DeadGoalSpriteOffsetY)
+                                   : new Vector2(0f, crouchCompensation);
 
         switch (State)
         {
