@@ -109,6 +109,7 @@ public class GameMapLoader
             trap.MoveSpeed             = obj.FloatProp("MoveSpeed",     trap.MoveSpeed);
             trap.MoveHorizontal        = obj.BoolProp ("MoveHorizontal",trap.MoveHorizontal);
             trap.Placement             = obj.EnumProp ("Placement",     trap.Placement);
+            trap.Size                  = obj.EnumProp ("Size",          trap.Size);
             trap.AnimationColumns      = obj.IntProp  ("AnimationColumns", trap.AnimationColumns);
             trap.AnimationFrameDuration= obj.FloatProp("AnimationFrameDuration", trap.AnimationFrameDuration);
             if (obj.Properties.ContainsKey("SpriteName"))
@@ -137,6 +138,9 @@ public class GameMapLoader
     {
         _loader.Register<SpikeTrap>("SpikeTrap", (spike, obj) =>
         {
+            spike.SpikeTiles      = obj.IntProp  ("SpikeTiles",      spike.SpikeTiles);
+            spike.RotationAngle   = obj.FloatProp("RotationAngle",   spike.RotationAngle);
+            spike.AlwaysExtended  = obj.BoolProp ("AlwaysExtended",  spike.AlwaysExtended);
             spike.PhaseOffset     = obj.FloatProp("PhaseOffset",     spike.PhaseOffset);
             spike.ExtendDuration  = obj.FloatProp("ExtendDuration",  spike.ExtendDuration);
             spike.HoldDuration    = obj.FloatProp("HoldDuration",    spike.HoldDuration);

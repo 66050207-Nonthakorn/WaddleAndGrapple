@@ -150,35 +150,34 @@ public class LaserRenderer : Component
 
         // Head
         DrawTile(spriteBatch, headSrc,
-            TileTopLeft(pos, 0, dstTile, horiz),
+            TileBottomLeft(pos, 0, dstTile, horiz),
             dstTile, rot, SpriteEffects.None, LayerEndpoint);
 
         // Beam (loop)
         for (int i = 0; i < beamTiles; i++)
             DrawTile(spriteBatch, beamSrc,
-                TileTopLeft(pos, i + 1, dstTile, horiz),
+                TileBottomLeft(pos, i + 1, dstTile, horiz),
                 dstTile, rot, SpriteEffects.None, LayerBeam);
 
         // Tail
         DrawTile(spriteBatch, tailSrc,
-            TileTopLeft(pos, totalTiles - 1, dstTile, horiz),
+            TileBottomLeft(pos, totalTiles - 1, dstTile, horiz),
             dstTile, rot, SpriteEffects.None, LayerEndpoint);
     }
 
-    // คำนวณ top-left ของ tile ที่ index ตามทิศทาง laser
-    private static Vector2 TileTopLeft(Vector2 origin, int index, float tileSize, bool horiz) =>
+    // คำนวณ bottom-left ของ tile ที่ index ตามทิศทาง laser
+    private static Vector2 TileBottomLeft(Vector2 origin, int index, float tileSize, bool horiz) =>
         horiz
             ? new Vector2(origin.X + tileSize * index, origin.Y)
             : new Vector2(origin.X, origin.Y + tileSize * index);
 
-    // วาด tile เดียว โดยส่ง topLeft แล้วแปลงเป็น center สำหรับ rotation
-    private void DrawTile(SpriteBatch sb, Rectangle src, Vector2 topLeft,
+/// การวาด tile เดียว โดยส่ง bottom-left แล้วแปลงเป็นตำแหน่งที่จะวาด
+    private void DrawTile(SpriteBatch sb, Rectangle src, Vector2 bottomLeft,
                           float dstSize, float rotation, SpriteEffects effects, float layer)
     {
-        Vector2 center    = topLeft + new Vector2(dstSize * 0.5f, dstSize * 0.5f);
-        Vector2 srcOrigin = new Vector2(src.Width * 0.5f, src.Height * 0.5f);
+        Vector2 srcOrigin = new Vector2(0f, src.Height);
         float   scale     = dstSize / src.Width;
-        sb.Draw(_sheet, center, src, Color.White, rotation, srcOrigin,
+        sb.Draw(_sheet, bottomLeft, src, Color.White, rotation, srcOrigin,
                 new Vector2(scale), effects, layer);
     }
 

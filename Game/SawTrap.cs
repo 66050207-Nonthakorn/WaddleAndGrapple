@@ -58,9 +58,21 @@ public class SawTrap : Trap
     {
         Damage = 1;
         _startPosition    = Position;
-        SpriteTextureName = SpriteTextureName ?? "pixel";
+
         if (Size == SawSize.Small) // Small saws always use the Full blade spritesheet row, even if Placement is set to something else.
             AnimationColumns = 3;
+
+        if (string.IsNullOrEmpty(SpriteTextureName) || SpriteTextureName == "pixel")
+        {
+            SpriteTextureName = Size switch
+            {
+                SawSize.Small  => "Traps/Saw/SmallSaw",
+                SawSize.Medium => "Traps/Saw/MediumSaw",
+                SawSize.Large  => "Traps/Saw/LargeSaw",
+                _              => "pixel"
+            };
+        }
+
         AddComponent<SawRenderer>();
     }
 

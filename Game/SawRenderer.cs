@@ -16,7 +16,7 @@ namespace WaddleAndGrapple.Game;
 /// Medium: 128x64,  4 cols → cell 32x32 (2x2 tiles)
 /// Small :  48x32,  3 cols → cell 16x16 (1x1 tile) — always Full
 ///
-/// Position is the surface contact / centre point depending on Placement.
+/// Position is the left-bottom anchor of the rendered sprite.
 /// </summary>
 public class SawRenderer : Component
 {
@@ -85,14 +85,14 @@ public class SawRenderer : Component
         if (placement == SawPlacement.Full)
         {
             src    = new Rectangle(frameX, 0, cellW, cellH);
-            origin = new Vector2(cellW * 0.5f, cellH * 0.5f);
+            origin = new Vector2(0f, cellH);
         }
         else
         {
             // All mounted variants use row 1; rotation sets the surface direction.
-            // Origin = center of contact edge (bottom of row-1 sprite) → sits at Position.
+            // Origin = bottom-left of the half-saw sprite.
             src    = new Rectangle(frameX, row1Y, cellW, mountedH);
-            origin = new Vector2(cellW * 0.5f, mountedH);
+            origin = new Vector2(0f, mountedH);
             rotation += placement switch
             {
                 SawPlacement.CeilingMounted   =>  MathF.PI,

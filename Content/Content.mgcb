@@ -61,6 +61,18 @@
 /processorParam:TextureFormat=Color
 /build:../Assets/Aseprite/Collectibles/SpeedUp.png;Collectibles/SpeedBoost
 
+#begin ../Assets/Aseprite/Collectibles/LevelFinished.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:../Assets/Aseprite/Collectibles/LevelFinished.png;Collectibles/LevelFinished
+
 #begin ../Assets/Aseprite/Player/Pickaxe.png
 /importer:TextureImporter
 /processor:TextureProcessor

@@ -102,7 +102,7 @@ public class SpikeRenderer : Component
                           float rotation, Color tint)
     {
         // ตั้งจุดอ้างอิงตอนวาดให้อยู่ตรงกลางด้านล่างของส่วนที่ครอปมา
-        var   srcOrigin = new Vector2(src.Width * 0.5f, src.Height);
+        var   srcOrigin = new Vector2(0f, src.Height);
         float scale     = (float)TileSize / SpriteTile;
         sb.Draw(_sheet, basePos, src, tint, rotation, srcOrigin,
                 scale, SpriteEffects.None, LayerDepth);
@@ -113,17 +113,14 @@ public class SpikeRenderer : Component
         if (_pixel == null) return;
         float rot = _spike.RotationAngle;
         var rightDir = new Vector2(MathF.Cos(rot), MathF.Sin(rot));
-        var upDir    = new Vector2(MathF.Sin(rot), -MathF.Cos(rot));
 
         float drawHeight = TileSize * ext;
 
         for (int i = 0; i < n; i++)
         {
             var basePos = _spike.Position + rightDir * (i * TileSize);
-            var center  = basePos + upDir * (drawHeight * 0.5f);
-
-            sb.Draw(_pixel, center, null, Color.Green, rot,
-                    new Vector2(0.5f, 0.5f), new Vector2(TileSize, drawHeight),
+            sb.Draw(_pixel, basePos, null, Color.Green, rot,
+                    new Vector2(0f, 1f), new Vector2(TileSize, drawHeight),
                     SpriteEffects.None, LayerDepth);
         }
     }

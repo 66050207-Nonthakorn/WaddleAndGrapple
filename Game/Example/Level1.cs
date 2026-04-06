@@ -108,6 +108,11 @@ class Level1 : BaseLevel
         var mapLoader = new GameMapLoader(this, "Assets/Tiled/Level1.tmj", player);
         var mapResult = mapLoader.Load(tileset, baseLayer: 0.5f, solidTileIndices: solidTileIndices);
 
+        foreach (var goal in mapResult.GetSpawned<GoalFlag>())
+        {
+            goal.OnComplete = CompleteLevel;
+        }
+
         if (mapResult.Tilemaps.Count > 0)
         {
             var tileCollider = mapResult.Tilemaps[0].GetComponent<TileCollider>();
