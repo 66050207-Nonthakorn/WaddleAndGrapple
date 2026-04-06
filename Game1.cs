@@ -109,7 +109,7 @@ public class Game1 : Microsoft.Xna.Framework.Game
         circleTexture.SetData(circleData);
         ResourceManager.Instance.LoadTexture("circle", circleTexture);
 
-        SceneManager.Instance.LoadScene("tileloaderdemo");
+        SceneManager.Instance.LoadScene("main");
     }
 
     private void OnClientSizeChanged(object sender, EventArgs e)

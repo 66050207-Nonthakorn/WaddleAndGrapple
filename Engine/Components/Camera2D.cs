@@ -166,8 +166,14 @@ public class Camera2D : Component
             );
         }
 
+        // Snap camera translation to whole pixels to avoid sub-pixel sampling artifacts
+        // (pixel art can look shrunken/shimmery otherwise).
+        Vector2 snappedPosition = new Vector2(
+            (float)Math.Round(_position.X),
+            (float)Math.Round(_position.Y));
+
         _transformMatrix =
-            Matrix.CreateTranslation(new Vector3(-_position - shakeOffset, 0f)) *
+            Matrix.CreateTranslation(new Vector3(-snappedPosition - shakeOffset, 0f)) *
             Matrix.CreateRotationZ(_rotation) *
             Matrix.CreateScale(_zoom, _zoom, 1f) *
             Matrix.CreateTranslation(new Vector3(Origin, 0f));

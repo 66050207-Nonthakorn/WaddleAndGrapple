@@ -243,6 +243,18 @@
 /processorParam:TextureFormat=Color
 /build:Tiles/tileset.png
 
+#begin ../Assets/Aseprite/TileSet/LevelTileSet.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:../Assets/Aseprite/TileSet/LevelTileSet.png;Tiles/LevelTileSet.png
+
 #begin ../Assets/Aseprite/Traps/Saw/Small Saw-SpriteSheet.png
 #begin UI/LockLevel.png
 /importer:TextureImporter

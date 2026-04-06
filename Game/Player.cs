@@ -43,16 +43,22 @@ public class Player : GameObject
     public const float RopeLaunchSpeed  = 900f;   // ความเร็วดึงตัวเองไปตามเชือก (px/s)
 
     // ── Collider Size (placeholder — ปรับเมื่อได้ sprite จริง) ────────────────
-    private const int PlayerWidth  = 40;
-    private const int PlayerHeight = 60;
+    private const int PlayerWidth  = 16;
+    private const int PlayerHeight = 32;
+
+    // ── Temp player should fit a 16x16 tile and use a 64×64 source frame scaled down.
+    public const float DisplayScale = 1f;
 
     // ── Temporary Ground (ลบเมื่อ Member 4 ส่ง tiles มา) ─────────────────────
     private const float TempGroundY = 400f;
 
     // ── Phase 7: Death ────────────────────────────────────────────────────────
-    private const float FallDeathY      = 480f;   // ขอบล่างหน้าจอ → ตาย
-    private const float ScreenLeft      = 0f;     // ขอบซ้าย
-    private const float ScreenRight     = 4800f;  // ขอบขวาของ demo scene
+    private const float DefaultFallDeathY = 480f;   // ขอบล่างหน้าจอ → ตาย
+    private const float DefaultScreenLeft = 0f;     // ขอบซ้าย
+    private const float DefaultScreenRight = 4800f; // ขอบขวาของ demo scene
+    private float _fallDeathY = DefaultFallDeathY;
+    private float _screenLeft = DefaultScreenLeft;
+    private float _screenRight = DefaultScreenRight;
     private const float RespawnDelaySec = 1.5f;   // วินาทีก่อน respawn
 
     // ── Velocity ──────────────────────────────────────────────────────────────
@@ -99,9 +105,6 @@ public class Player : GameObject
     // ── Active PowerUp Effects ────────────────────────────────────────────────
     private readonly List<PowerUp> _activeEffects = new();
     public IReadOnlyList<PowerUp> ActiveEffects => _activeEffects;
-
-    // ── Sprite Scale ──────────────────────────────────────────────────────────
-    public const float DisplayScale = 2f;
 
     // ── Components ────────────────────────────────────────────────────────────
     private SpriteRenderer _spriteRenderer;
@@ -280,17 +283,17 @@ public class Player : GameObject
         }
 
         // Phase 7 — Screen boundary
-        if (Position.Y > FallDeathY) { Die(); return; } // ตกหล่น → ตาย
+        if (Position.Y > _fallDeathY) { Die(); return; } // ตกหล่น → ตาย
 
         // ชนขอบซ้าย/ขวา → หยุดแค่นั้น ไม่ตาย
-        if (Position.X < ScreenLeft)
+        if (Position.X < _screenLeft)
         {
-            Position  = new Vector2(ScreenLeft, Position.Y);
+            Position  = new Vector2(_screenLeft, Position.Y);
             VelocityX = 0f;
         }
-        else if (Position.X > ScreenRight)
+        else if (Position.X > _screenRight)
         {
-            Position  = new Vector2(ScreenRight, Position.Y);
+            Position  = new Vector2(_screenRight, Position.Y);
             VelocityX = 0f;
         }
 
@@ -1007,6 +1010,12 @@ public class Player : GameObject
     // ── API สำหรับ Level (Member 4) ───────────────────────────────────────────
     public void SetSolids(List<Rectangle> solids) => _solidRects = solids;
     public IReadOnlyList<Rectangle> Solids => _solidRects;
+    public void SetWorldBounds(float left, float right, float fallDeathY)
+    {
+        _screenLeft = left;
+        _screenRight = right;
+        _fallDeathY = fallDeathY;
+    }
 
     private List<Enemy> _enemies = [];
     public void SetEnemies(List<Enemy> enemies)

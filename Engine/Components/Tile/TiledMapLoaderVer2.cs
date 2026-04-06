@@ -11,17 +11,10 @@ namespace WaddleAndGrapple.Engine.Components.Tile;
 
 /// <summary>
 /// Loads Tiled map editor exports (JSON format).
-/// Export from Tiled: File -> Export As -> JSON map files (*.json)
+/// Export from Tiled: File → Export As → JSON map files (*.json)
 /// </summary>
-public static class TiledMapLoader
+public static class TiledMapLoaderVer2
 {
-    public class TiledTileset
-    {
-        public int FirstGid { get; set; }
-        public string Source { get; set; }
-        public string Name { get; set; }
-    }
-
     /// <summary>
     /// Result of loading a Tiled JSON map.
     /// </summary>
@@ -31,7 +24,6 @@ public static class TiledMapLoader
         public int Height { get; set; }
         public int TileWidth { get; set; }
         public int TileHeight { get; set; }
-        public List<TiledTileset> Tilesets { get; set; } = [];
         public List<TiledTileLayer> TileLayers { get; set; } = [];
         public List<TiledObjectLayer> ObjectLayers { get; set; } = [];
     }
@@ -85,20 +77,6 @@ public static class TiledMapLoader
             TileHeight = root.GetProperty("tileheight").GetInt32(),
         };
 
-        // Parse tilesets
-        if (root.TryGetProperty("tilesets", out var tilesets))
-        {
-            foreach (var ts in tilesets.EnumerateArray())
-            {
-                map.Tilesets.Add(new TiledTileset
-                {
-                    FirstGid = ts.GetProperty("firstgid").GetInt32(),
-                    Source = ts.TryGetProperty("source", out var s) ? s.GetString() ?? "" : "",
-                    Name = ts.TryGetProperty("name", out var n) ? n.GetString() ?? "" : ""
-                });
-            }
-        }
-
         // Parse layers
         foreach (var layer in root.GetProperty("layers").EnumerateArray())
         {
@@ -106,7 +84,7 @@ public static class TiledMapLoader
 
             if (layerType == "tilelayer")
             {
-                map.TileLayers.Add(ParseTileLayer(layer, map.Width, map.Height, map.TileWidth, map.TileHeight));
+                map.TileLayers.Add(ParseTileLayer(layer, map.Width, map.Height));
             }
             else if (layerType == "objectgroup")
             {
@@ -131,7 +109,7 @@ public static class TiledMapLoader
             string layerType = layer.GetProperty("type").GetString();
 
             if (layerType == "tilelayer")
-                map.TileLayers.Add(ParseTileLayer(layer, map.Width, map.Height, map.TileWidth, map.TileHeight));
+                map.TileLayers.Add(ParseTileLayer(layer, map.Width, map.Height));
             else if (layerType == "objectgroup")
                 map.ObjectLayers.Add(ParseObjectLayer(layer));
             else if (layerType == "group")
@@ -139,8 +117,11 @@ public static class TiledMapLoader
         }
     }
 
-    private static TiledTileLayer ParseTileLayer(JsonElement layer, int mapWidth, int mapHeight, int tileWidth, int tileHeight)
+    private static TiledTileLayer ParseTileLayer(JsonElement layer, int mapWidth, int mapHeight)
     {
+        int width = layer.TryGetProperty("width", out var w) ? w.GetInt32() : mapWidth;
+        int height = layer.TryGetProperty("height", out var h) ? h.GetInt32() : mapHeight;
+
         var tileLayer = new TiledTileLayer
         {
             Name = layer.GetProperty("name").GetString(),
@@ -148,96 +129,24 @@ public static class TiledMapLoader
             Opacity = layer.TryGetProperty("opacity", out var op) ? (float)op.GetDouble() : 1f,
             OffsetX = layer.TryGetProperty("offsetx", out var ox) ? ox.GetInt32() : 0,
             OffsetY = layer.TryGetProperty("offsety", out var oy) ? oy.GetInt32() : 0,
+            MapData = new int[height, width],
         };
 
-        if (layer.TryGetProperty("chunks", out var chunks))
+        var data = layer.GetProperty("data");
+
+        // Tiled uses 0 = empty, 1-based GIDs. We convert to 0-based with -1 = empty.
+        int i = 0;
+        foreach (var gid in data.EnumerateArray())
         {
-            // Infinite map chunks
-            int minX = int.MaxValue;
-            int minY = int.MaxValue;
-            int maxX = int.MinValue;
-            int maxY = int.MinValue;
+            int rawGid = gid.GetInt32();
 
-            foreach (var chunk in chunks.EnumerateArray())
-            {
-                int cx = chunk.GetProperty("x").GetInt32();
-                int cy = chunk.GetProperty("y").GetInt32();
-                int cw = chunk.GetProperty("width").GetInt32();
-                int ch = chunk.GetProperty("height").GetInt32();
+            // Clear flip flags (bits 29-31 are used for flipping in Tiled)
+            int tileId = rawGid & 0x0FFFFFFF;
 
-                if (cx < minX) minX = cx;
-                if (cy < minY) minY = cy;
-                if (cx + cw > maxX) maxX = cx + cw;
-                if (cy + ch > maxY) maxY = cy + ch;
-            }
-
-            int width = maxX - minX;
-            int height = maxY - minY;
-
-            if (width <= 0 || height <= 0)
-            {
-                tileLayer.MapData = new int[0, 0];
-                return tileLayer;
-            }
-
-            tileLayer.MapData = new int[height, width];
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    tileLayer.MapData[y, x] = 0; // Empty tile is 0
-                }
-            }
-
-            // Adjust offset to correctly position the reconstructed matrix
-            tileLayer.OffsetX += minX * tileWidth;
-            tileLayer.OffsetY += minY * tileHeight;
-
-            foreach (var chunk in chunks.EnumerateArray())
-            {
-                int cx = chunk.GetProperty("x").GetInt32();
-                int cy = chunk.GetProperty("y").GetInt32();
-                int cw = chunk.GetProperty("width").GetInt32();
-                var data = chunk.GetProperty("data");
-
-                int i = 0;
-                foreach (var gid in data.EnumerateArray())
-                {
-                    int tileId = (int)(gid.GetInt64() & 0x0FFFFFFF);
-
-                    int r = (cy - minY) + (i / cw);
-                    int c = (cx - minX) + (i % cw);
-
-                    // Note: Raw GID 0 = Empty. We store raw GIDs directly.
-                    tileLayer.MapData[r, c] = tileId == 0 ? 0 : tileId;
-                    i++;
-                }
-            }
-        }
-        else if (layer.TryGetProperty("data", out var data))
-        {
-            // Fixed map data
-            int width = layer.TryGetProperty("width", out var w) ? w.GetInt32() : mapWidth;
-            int height = layer.TryGetProperty("height", out var h) ? h.GetInt32() : mapHeight;
-
-            tileLayer.MapData = new int[height, width];
-
-            int i = 0;
-            foreach (var gid in data.EnumerateArray())
-            {
-                // Clear flip flags (bits 29-31 are used for flipping in Tiled)
-                int tileId = (int)(gid.GetInt64() & 0x0FFFFFFF);
-
-                int row = i / width;
-                int col = i % width;
-                tileLayer.MapData[row, col] = tileId == 0 ? 0 : tileId; // 0 is empty
-                i++;
-            }
-        }
-        else
-        {
-            // Empty layer or unsupported format
-            tileLayer.MapData = new int[0, 0];
+            int row = i / width;
+            int col = i % width;
+            tileLayer.MapData[row, col] = tileId == 0 ? -1 : tileId - 1;
+            i++;
         }
 
         return tileLayer;
@@ -282,30 +191,23 @@ public static class TiledMapLoader
 
     /// <summary>
     /// Create GameObjects with Tilemap components from a loaded TiledMap.
-    /// Supports multiple tilesets for complex maps.
+    /// One GameObject is created per tile layer.
     /// </summary>
     /// <param name="scene">The scene to add tilemaps to.</param>
     /// <param name="map">The parsed TiledMap.</param>
-    /// <param name="tilesets">A dictionary mapping FirstGid -> Texture2D. The FirstGid can be found in TiledMap.Tilesets.</param>
+    /// <param name="tileset">The tileset texture to use.</param>
     /// <param name="baseLayer">Base draw layer depth (each subsequent layer adds 0.01).</param>
-    /// <param name="solidTileGids">Optional tile GIDs to mark as solid (collision). Applied to the first tile layer only if not null.</param>
+    /// <param name="solidTileIndices">Optional tile indices to mark as solid (collision). Applied to the first tile layer only if not null.</param>
     /// <returns>List of created tile layer GameObjects.</returns>
     public static List<GameObject> CreateTilemapObjects(
         Scene scene,
         TiledMap map,
-        Dictionary<int, Texture2D> tilesets,
+        Texture2D tileset,
         float baseLayer = 0.5f,
-        int[] solidTileGids = null)
+        int[] solidTileIndices = null)
     {
         var objects = new List<GameObject>();
         float layer = baseLayer;
-
-        var mappedTilesets = new List<TilemapTileset>();
-        foreach (var kvp in tilesets)
-        {
-            mappedTilesets.Add(new TilemapTileset { FirstGid = kvp.Key, Texture = kvp.Value });
-        }
-        mappedTilesets.Sort((a, b) => a.FirstGid.CompareTo(b.FirstGid));
 
         for (int i = 0; i < map.TileLayers.Count; i++)
         {
@@ -318,17 +220,17 @@ public static class TiledMapLoader
                 go.Position = new Vector2(tileLayer.OffsetX, tileLayer.OffsetY);
 
             var tilemap = go.AddComponent<Tilemap>();
-            tilemap.Tilesets = mappedTilesets;
+            tilemap.Tileset = tileset;
             tilemap.SourceTileSize = map.TileWidth;
             tilemap.DestinationTileSize = map.TileWidth;
             tilemap.Layer = layer;
             tilemap.MapData = tileLayer.MapData;
 
             // Add collision to the first tile layer by default
-            if (solidTileGids != null && i == 0)
+            if (solidTileIndices != null && i == 0)
             {
                 var collider = go.AddComponent<TileCollider>();
-                collider.SetSolid(solidTileGids);
+                collider.SetSolid(solidTileIndices);
             }
 
             objects.Add(go);
@@ -336,30 +238,5 @@ public static class TiledMapLoader
         }
 
         return objects;
-    }
-
-    /// <summary>
-    /// Legacy fallback method for single-tileset maps.
-    /// </summary>
-    public static List<GameObject> CreateTilemapObjects(
-        Scene scene,
-        TiledMap map,
-        Texture2D tileset,
-        float baseLayer = 0.5f,
-        int[] solidTileIndices = null)
-    {
-        // Fallback for maps expecting single tilesets. We retrieve the firstGid from parsing to stay compatible.
-        int firstGid = map.Tilesets.Count > 0 ? map.Tilesets[0].FirstGid : 1;
-        var dict = new Dictionary<int, Texture2D> { { firstGid, tileset } };
-        
-        int[] mappedSolids = null;
-        if (solidTileIndices != null)
-        {
-            mappedSolids = new int[solidTileIndices.Length];
-            for (int i = 0; i < solidTileIndices.Length; i++)
-                mappedSolids[i] = solidTileIndices[i] + firstGid;
-        }
-
-        return CreateTilemapObjects(scene, map, dict, baseLayer, mappedSolids);
     }
 }

@@ -1,13 +1,22 @@
 using System;
+using System.Collections.Generic;
 using WaddleAndGrapple.Engine.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace WaddleAndGrapple.Engine.Components.Tile;
 
+public class TilemapTileset
+{
+    public int FirstGid { get; set; }
+    public Texture2D Texture { get; set; }
+}
+
 public class Tilemap : Component
 {
-    public Texture2D Tileset { get; set; }
+    public Texture2D Tileset { get; set; } // Legacy fallback
+    public List<TilemapTileset> Tilesets { get; set; } = new();
+
     public int SourceTileSize { get; set; }
     public int DestinationTileSize { get; set; }
     
@@ -16,9 +25,9 @@ public class Tilemap : Component
 
     public override void Draw(SpriteBatch spriteBatch)
     {
-        if (Tileset == null || MapData == null) return;
+        if (MapData == null) return;
+        if (Tilesets.Count == 0 && Tileset == null) return;
 
-        int tilesetColumns = Tileset.Width / SourceTileSize;
         int mapRows = MapData.GetLength(0);
         int mapCols = MapData.GetLength(1);
 
@@ -44,16 +53,53 @@ public class Tilemap : Component
         {
             for (int x = startX; x <= endX; x++)
             {
-                int tileIndex = MapData[y, x];
-                if (tileIndex == -1) continue;
+                int gid = MapData[y, x];
+                if (gid <= 0 && gid == -1) continue; // Legacy empty
+                if (gid == 0) continue; // New empty
 
-                int tileX = tileIndex % tilesetColumns;
-                int tileY = tileIndex / tilesetColumns;
+                Texture2D tex = null;
+                int localId = gid;
+
+                if (Tilesets.Count > 0)
+                {
+                    TilemapTileset matched = null;
+                    for (int i = Tilesets.Count - 1; i >= 0; i--)
+                    {
+                        if (gid >= Tilesets[i].FirstGid)
+                        {
+                            matched = Tilesets[i];
+                            break;
+                        }
+                    }
+                    if (matched != null)
+                    {
+                        tex = matched.Texture;
+                        localId = gid - matched.FirstGid;
+                    }
+                }
+                else
+                {
+                    tex = Tileset;
+                    // Legacy maps assume gid was already converted to 0-based
+                    localId = gid;
+                }
+
+                if (tex == null) continue;
+
+                int tilesetColumns = tex.Width / SourceTileSize;
+                if (tilesetColumns <= 0) continue;
+
+                int tileX = localId % tilesetColumns;
+                int tileY = localId / tilesetColumns;
 
                 Rectangle sourceRect = new Rectangle(tileX * SourceTileSize, tileY * SourceTileSize, SourceTileSize, SourceTileSize);
                 Vector2 position = new Vector2(x * DestinationTileSize, y * DestinationTileSize) * GameObject.Scale;
+                Vector2 drawPosition = position + GameObject.Position;
+                drawPosition = new Vector2(
+                    (float)Math.Round(drawPosition.X),
+                    (float)Math.Round(drawPosition.Y));
 
-                spriteBatch.Draw(Tileset, position + GameObject.Position, sourceRect, Color.White,
+                spriteBatch.Draw(tex, drawPosition, sourceRect, Color.White,
                     GameObject.Rotation.Z, Vector2.Zero, tileScale, SpriteEffects.None, Layer);
             }
         }

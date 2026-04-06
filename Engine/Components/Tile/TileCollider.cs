@@ -165,7 +165,9 @@ public class TileCollider : Collider
     private (Tilemap tilemap, int scaledW, int scaledH) GetSetup()
     {
         var tilemap = GameObject.GetComponent<Tilemap>();
-        if (tilemap?.MapData == null || tilemap.Tileset == null) return (null, 0, 0);
+        if (tilemap?.MapData == null || (tilemap.Tileset == null && tilemap.Tilesets.Count == 0))
+            return (null, 0, 0);
+
         int scaledW = (int)(tilemap.DestinationTileSize * GameObject.Scale.X);
         int scaledH = (int)(tilemap.DestinationTileSize * GameObject.Scale.Y);
         return (tilemap, scaledW, scaledH);
