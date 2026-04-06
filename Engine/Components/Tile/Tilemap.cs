@@ -54,8 +54,7 @@ public class Tilemap : Component
             for (int x = startX; x <= endX; x++)
             {
                 int gid = MapData[y, x];
-                if (gid <= 0 && gid == -1) continue; // Legacy empty
-                if (gid == 0) continue; // New empty
+                if (gid < 0) continue; // -1 = empty tile
 
                 Texture2D tex = null;
                 int localId = gid;
@@ -87,10 +86,13 @@ public class Tilemap : Component
                 if (tex == null) continue;
 
                 int tilesetColumns = tex.Width / SourceTileSize;
-                if (tilesetColumns <= 0) continue;
+                int tilesetRows    = tex.Height / SourceTileSize;
+                if (tilesetColumns <= 0 || tilesetRows <= 0) continue;
 
                 int tileX = localId % tilesetColumns;
                 int tileY = localId / tilesetColumns;
+
+                if (tileX < 0 || tileY < 0 || tileY >= tilesetRows) continue; // out of bounds
 
                 Rectangle sourceRect = new Rectangle(tileX * SourceTileSize, tileY * SourceTileSize, SourceTileSize, SourceTileSize);
                 Vector2 position = new Vector2(x * DestinationTileSize, y * DestinationTileSize) * GameObject.Scale;
