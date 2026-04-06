@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using GamePlayer = WaddleAndGrapple.Game.Player;
-using GameEnemy = WaddleAndGrapple.Game.Enemy;
+using GameEnemy = WaddleAndGrapple.Game.Enemy3;
 
 namespace WaddleAndGrapple.Game.Example;
 
@@ -65,7 +65,8 @@ class MainScene : Scene
 
         // ── Enemy ────────────────────────────────────────────────────────────
         enemy = base.AddGameObject<GameEnemy>("enemy");
-        enemy.Position = new Vector2(600, 380);
+        enemy.Position = new Vector2(500, 200);
+        enemy.SetScene(this);
         enemy.SetPlayer(player);
 
         // ══════════════════════════════════════════════════════════════════════

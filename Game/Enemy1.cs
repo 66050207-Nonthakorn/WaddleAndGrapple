@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework;
 namespace WaddleAndGrapple.Game;
 
 // ── State Machine ─────────────────────────────────────────────────────────────
-public enum EnemyState
+public enum Enemy1State
 {
     Idle,
     Patrolling,
@@ -25,7 +25,7 @@ public enum EnemyState
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-public class Enemy : GameObject
+public class Enemy1 : GameObject
 {
     // ── Physics Constants ─────────────────────────────────────────────────────
     private const float Gravity      = 1200f;  // px/s²
@@ -70,7 +70,7 @@ public class Enemy : GameObject
     public int  FacingDirection { get; set; } = 1; // +1 = ขวา, -1 = ซ้าย
 
     // ── State Machine ─────────────────────────────────────────────────────────
-    public EnemyState State { get; private set; } = EnemyState.Idle;
+    public Enemy1State State { get; private set; } = Enemy1State.Idle;
 
     // ── Spawn / Patrol ────────────────────────────────────────────────────────
     private Vector2 _spawnPosition;
@@ -151,7 +151,7 @@ public class Enemy : GameObject
         if (WorldTime.IsFrozen) return;
 
         // Dead: นับ timer รอ animation จบ แล้ว deactivate
-        if (State == EnemyState.Dead)
+        if (State == Enemy1State.Dead)
         {
             if (_deadTimer > 0f) _deadTimer -= dt;
             else base.Active = false;
@@ -195,46 +195,46 @@ public class Enemy : GameObject
 
         // Leash: ออกไกลเกิน LeashRange → กลับ spawn (ไม่ interrupt ขณะกลางอากาศหรือลุกขึ้น)
         if (distToSpawn > LeashRange
-            && State != EnemyState.ReturningToSpawn
-            && State != EnemyState.FallingDown
-            && State != EnemyState.GettingUp)
+            && State != Enemy1State.ReturningToSpawn
+            && State != Enemy1State.FallingDown
+            && State != Enemy1State.GettingUp)
         {
-            ChangeState(EnemyState.ReturningToSpawn);
+            ChangeState(Enemy1State.ReturningToSpawn);
         }
 
         switch (State)
         {
             // ── Idle: เริ่ม patrol ทันที ──────────────────────────────────────
-            case EnemyState.Idle:
-                ChangeState(EnemyState.Patrolling);
+            case Enemy1State.Idle:
+                ChangeState(Enemy1State.Patrolling);
                 break;
 
             // ── Patrol: เดินไปมาในรัศมี PatrolRadius ─────────────────────────
-            case EnemyState.Patrolling:
+            case Enemy1State.Patrolling:
                 if (playerInSight)
                 {
-                    ChangeState(EnemyState.Taunting);
+                    ChangeState(Enemy1State.Taunting);
                     break;
                 }
                 HandlePatrol();
                 break;
 
             // ── Taunting: หยุด หันหา player เล่น emote แล้วค่อย chase ─────────
-            case EnemyState.Taunting:
+            case Enemy1State.Taunting:
                 VelocityX = 0f;
                 FacingDirection = _player.Position.X > Position.X ? 1 : -1;
                 if (_tauntTimer <= 0f)
-                    ChangeState(EnemyState.Chasing);
+                    ChangeState(Enemy1State.Chasing);
                 break;
 
             // ── Chase: วิ่งตาม player ─────────────────────────────────────────
-            case EnemyState.Chasing:
+            case Enemy1State.Chasing:
                 if (!playerInSight)
                 {
                     // ยังอยู่ในเขต patrol → กลับ patrol; ออกนอกเขต → คืน spawn
                     ChangeState(distToSpawn <= PatrolRadius
-                        ? EnemyState.Patrolling
-                        : EnemyState.ReturningToSpawn);
+                        ? Enemy1State.Patrolling
+                        : Enemy1State.ReturningToSpawn);
                     break;
                 }
                 if (distToPlayer <= AttackRange)
@@ -246,39 +246,39 @@ public class Enemy : GameObject
                 break;
 
             // ── Attacking: หยุดนิ่ง รอ animation จบ ─────────────────────────
-            case EnemyState.Attacking:
+            case Enemy1State.Attacking:
                 VelocityX = 0f;
                 if (_attackAnimTimer <= 0f)
-                    ChangeState(playerInSight ? EnemyState.Chasing : EnemyState.Patrolling);
+                    ChangeState(playerInSight ? Enemy1State.Chasing : Enemy1State.Patrolling);
                 break;
 
             // ── Falling: physics จัดการ ไม่ควบคุม horizontal ──────────────────
-            case EnemyState.FallingDown:
+            case Enemy1State.FallingDown:
                 VelocityX = 0f;
                 break;
 
             // ── Getting Up: หยุดนิ่ง รอ animation จบ → กลับ patrol ───────────
-            case EnemyState.GettingUp:
+            case Enemy1State.GettingUp:
                 VelocityX = 0f;
                 if (_gettingUpTimer <= 0f)
-                    ChangeState(EnemyState.Patrolling);
+                    ChangeState(Enemy1State.Patrolling);
                 break;
 
             // ── Return to Spawn ───────────────────────────────────────────────
-            case EnemyState.ReturningToSpawn:
+            case Enemy1State.ReturningToSpawn:
                 HandleReturnToSpawn();
                 if (distToSpawn < 10f)
                 {
                     VelocityX = 0f;
-                    ChangeState(EnemyState.Patrolling);
+                    ChangeState(Enemy1State.Patrolling);
                 }
                 break;
 
             // Stunned
-            case EnemyState.Stunned:
+            case Enemy1State.Stunned:
                 VelocityX = 0f;
                 if (_stunnedTimer <= 0f)
-                    ChangeState(EnemyState.Patrolling);
+                    ChangeState(Enemy1State.Patrolling);
                 break;
         }
     }
@@ -328,7 +328,7 @@ public class Enemy : GameObject
 
         _attackTimer     = AttackCooldown;
         _attackAnimTimer = AttackAnimDuration;
-        ChangeState(EnemyState.Attacking);
+        ChangeState(Enemy1State.Attacking);
 
         // เผชิญหน้ากับ player ก่อน attack
         FacingDirection = _player.Position.X > Position.X ? 1 : -1;
@@ -412,29 +412,29 @@ public class Enemy : GameObject
     {
         switch (State)
         {
-            case EnemyState.Patrolling:
+            case Enemy1State.Patrolling:
                 _animator.Play(_patrolWaitTimer > 0f ? "standing" : "walk");
                 break;
-            case EnemyState.Taunting:
+            case Enemy1State.Taunting:
                 _animator.Play("emote");
                 break;
-            case EnemyState.ReturningToSpawn:
-            case EnemyState.Chasing:
+            case Enemy1State.ReturningToSpawn:
+            case Enemy1State.Chasing:
                 _animator.Play("run");
                 break;
-            case EnemyState.Attacking:
+            case Enemy1State.Attacking:
                 _animator.Play("attack");
                 break;
-            case EnemyState.FallingDown:
+            case Enemy1State.FallingDown:
                 _animator.Play("freefall");
                 break;
-            case EnemyState.GettingUp:
+            case Enemy1State.GettingUp:
                 _animator.Play("gettingup");
                 break;
-            case EnemyState.Dead:
+            case Enemy1State.Dead:
                 _animator.Play("dead");
                 break;
-            case EnemyState.Stunned:
+            case Enemy1State.Stunned:
                 _animator.Play("stunned");
                 break;
             default:
@@ -452,17 +452,17 @@ public class Enemy : GameObject
         switch (State)
         {
             // เดินตกขอบ → เข้า FallingDown
-            case EnemyState.Patrolling:
-            case EnemyState.Chasing:
-            case EnemyState.ReturningToSpawn:
+            case Enemy1State.Patrolling:
+            case Enemy1State.Chasing:
+            case Enemy1State.ReturningToSpawn:
                 if (!IsGrounded)
-                    ChangeState(EnemyState.FallingDown);
+                    ChangeState(Enemy1State.FallingDown);
                 break;
 
             // แตะพื้นหลังตก → เข้า GettingUp
-            case EnemyState.FallingDown:
+            case Enemy1State.FallingDown:
                 if (IsGrounded)
-                    ChangeState(EnemyState.GettingUp);
+                    ChangeState(Enemy1State.GettingUp);
                 break;
         }
     }
@@ -493,12 +493,12 @@ public class Enemy : GameObject
             {
                 Position = new Vector2(solid.Left - EnemyWidth / 2f, Position.Y);
                 // ชนผนังขณะ patrol → สลับทิศ
-                if (State == EnemyState.Patrolling) _patrolDirection = -1;
+                if (State == Enemy1State.Patrolling) _patrolDirection = -1;
             }
             else if (VelocityX < 0f)
             {
                 Position = new Vector2(solid.Right + EnemyWidth / 2f, Position.Y);
-                if (State == EnemyState.Patrolling) _patrolDirection = 1;
+                if (State == Enemy1State.Patrolling) _patrolDirection = 1;
             }
             VelocityX = 0f;
             UpdateColliderBounds();
@@ -557,25 +557,25 @@ public class Enemy : GameObject
     // State Machine
     // ══════════════════════════════════════════════════════════════════════════
 
-    private void ChangeState(EnemyState newState)
+    private void ChangeState(Enemy1State newState)
     {
         if (State == newState) return;
 
         switch (newState)
         {
-            case EnemyState.Patrolling:
+            case Enemy1State.Patrolling:
                 _patrolWaitTimer = 0f;
                 break;
-            case EnemyState.Taunting:
+            case Enemy1State.Taunting:
                 _tauntTimer = TauntAnimDuration;
                 break;
-            case EnemyState.GettingUp:
+            case Enemy1State.GettingUp:
                 _gettingUpTimer = GettingUpAnimDuration;
                 break;
-            case EnemyState.Dead:
+            case Enemy1State.Dead:
                 _deadTimer = DeadAnimDuration;
                 break;
-            case EnemyState.Stunned:
+            case Enemy1State.Stunned:
                 _stunnedTimer = StunnedAnimDuration;
                 break;
         }
@@ -598,16 +598,16 @@ public class Enemy : GameObject
     /// <summary>เรียกจาก hazard/trap หรือ Player เมื่อต้องการกำจัด enemy</summary>
     public void Die()
     {
-        if (State == EnemyState.Dead) return;
+        if (State == Enemy1State.Dead) return;
         VelocityX = 0f;
         VelocityY = 0f;
-        ChangeState(EnemyState.Dead);
+        ChangeState(Enemy1State.Dead);
     }
 
     public void Stun()
     {
-        if (State == EnemyState.Stunned) return;
-        ChangeState(EnemyState.Stunned);
+        if (State == Enemy1State.Stunned) return;
+        ChangeState(Enemy1State.Stunned);
     }
 }
 
