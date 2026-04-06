@@ -22,6 +22,7 @@ public sealed class ProgressionManager
 
     public string SaveFilePath { get; set; } = Path.Combine(
         Directory.GetCurrentDirectory(),
+        "Game",
         "Save",
         "Progression.json"
     );
