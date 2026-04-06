@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using WaddleAndGrapple.Game;
 using GamePlayer = WaddleAndGrapple.Game.Player;
 
 namespace WaddleAndGrapple.Game.Example;
@@ -99,40 +100,27 @@ class Level1 : BaseLevel
         // enemy1.SetSolids(solids);
 
         // ══════════════════════════════════════════════════════════════════════
-        // VISUALS — Tiled map (Level1.tmj)
+        // TILE MAP — โหลดจาก Level1.tmj ผ่าน GameMapLoader (tile 16×16)
         // ══════════════════════════════════════════════════════════════════════
-        var tiledMap     = TiledMapLoader.Load("Assets/Tiled/Level1.tmj");
-        KeepOnlyLevelTiles(tiledMap, "LevelTileSet.tsx");
-        var levelTileset = ResourceManager.Instance.GetTexture("Tiles/LevelTileSet");
-        var tilesets = new Dictionary<int, Texture2D> {{ 1, levelTileset }};
-        var tilemapObjects = TiledMapLoader.CreateTilemapObjects(this, tiledMap, tilesets, baseLayer: 0.5f);
+        var tileset          = ResourceManager.Instance.GetTexture("Tiles/LevelTileSet");
+        var solidTileIndices = LoadSolidTileIndicesFromTileset("Assets/Tiled/LevelTileSet.tsx");
 
-        var solidTileGids = LoadSolidTileGidsFromTileset("Assets/Tiled/LevelTileSet.tsx", firstGid: 1);
-        if (tilemapObjects.Count > 0)
+        var mapLoader = new GameMapLoader(this, "Assets/Tiled/Level1.tmj", player);
+        var mapResult = mapLoader.Load(tileset, baseLayer: 0.5f, solidTileIndices: solidTileIndices);
+
+        if (mapResult.Tilemaps.Count > 0)
         {
-            foreach (var tilemapGo in tilemapObjects)
-            {
-                tilemapGo.Scale = Vector2.One;
-                var tilemap = tilemapGo.GetComponent<Tilemap>();
-                if (tilemap != null)
-                {
-                    tilemap.SourceTileSize = 16;
-                    tilemap.DestinationTileSize = 16;
-                }
-            }
-
-            var levelLayer = tilemapObjects[0];
-            var tileCollider = levelLayer.AddComponent<TileCollider>();
-            tileCollider.SetSolid(solidTileGids);
-
-            var solidRects = tileCollider.GetSolidRects();
-            player.SetSolids(solidRects);
+            var tileCollider = mapResult.Tilemaps[0].GetComponent<TileCollider>();
+            if (tileCollider != null)
+                player.SetSolids(tileCollider.GetSolidRects());
         }
 
+        var tiledMap = mapResult.Map;
         player.SetWorldBounds(
             left: 0f,
             right: tiledMap.Width * tiledMap.TileWidth,
             fallDeathY: (tiledMap.Height * tiledMap.TileHeight) + 160f);
+
         // ══════════════════════════════════════════════════════════════════════
         // CHECKPOINTS / SECTIONS — อ่านจาก Room layer ใน Tiled
         // ══════════════════════════════════════════════════════════════════════
@@ -185,7 +173,9 @@ class Level1 : BaseLevel
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private static int[] LoadSolidTileGidsFromTileset(string tsxPath, int firstGid)
+    // Returns 0-based tile indices matching MapLoader's MapData (rawGid - 1).
+    // TSX tile id is already 0-based for firstGid=1, so we use it directly.
+    private static int[] LoadSolidTileIndicesFromTileset(string tsxPath)
     {
         var doc = XDocument.Load(tsxPath);
         XNamespace ns = doc.Root?.Name.Namespace ?? XNamespace.None;
@@ -195,39 +185,9 @@ class Level1 : BaseLevel
             .Where(tile => tile.Element(ns + "objectgroup") != null)
             .Select(tile => (int?)tile.Attribute("id"))
             .Where(id => id.HasValue)
-            .Select(id => firstGid + id!.Value)
+            .Select(id => id.Value)
             .Distinct()
             .ToArray();
-    }
-
-    private static void KeepOnlyLevelTiles(TiledMapLoader.TiledMap map, string levelTilesetSource)
-    {
-        var ordered = map.Tilesets.OrderBy(t => t.FirstGid).ToList();
-        var levelTs = ordered.FirstOrDefault(t =>
-            string.Equals(t.Source, levelTilesetSource, StringComparison.OrdinalIgnoreCase));
-        if (levelTs == null) return;
-
-        int first = levelTs.FirstGid;
-        int next = ordered.Where(t => t.FirstGid > first)
-                          .Select(t => t.FirstGid)
-                          .DefaultIfEmpty(int.MaxValue)
-                          .Min();
-
-        foreach (var layer in map.TileLayers)
-        {
-            int rows = layer.MapData.GetLength(0);
-            int cols = layer.MapData.GetLength(1);
-            for (int y = 0; y < rows; y++)
-            {
-                for (int x = 0; x < cols; x++)
-                {
-                    int gid = layer.MapData[y, x];
-                    if (gid == 0) continue;
-                    if (gid < first || gid >= next)
-                        layer.MapData[y, x] = 0;
-                }
-            }
-        }
     }
 
     protected override void CompleteLevel()
