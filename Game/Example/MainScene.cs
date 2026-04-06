@@ -66,7 +66,7 @@ class MainScene : Scene
 
         // ── Enemy ────────────────────────────────────────────────────────────
         enemy = base.AddGameObject<GameEnemy>("enemy");
-        enemy.Position = new Vector2(600, 460);
+        enemy.Position = new Vector2(600, 380);
         enemy.SetPlayer(player);
 
         // ══════════════════════════════════════════════════════════════════════

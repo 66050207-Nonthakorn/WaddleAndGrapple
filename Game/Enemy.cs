@@ -19,6 +19,7 @@ public enum EnemyState
     FallingDown,      // ตกขอบ — อยู่กลางอากาศ
     GettingUp,        // แตะพื้นหลังตก — รอ animation จบก่อน resume
     ReturningToSpawn,
+    Stunned,
     Dead,
 }
 
@@ -48,7 +49,7 @@ public class Enemy : GameObject
     // ── AI Ranges ─────────────────────────────────────────────────────────────
     public float PatrolRadius   { get; set; } = 150f; // ระยะ patrol ซ้าย/ขวาจาก spawn
     public float DetectionRange { get; set; } = 250f; // ระยะมองเห็น player
-    public float AttackRange    { get; set; } = 60f;  // ระยะ melee
+    public float AttackRange    { get; set; } = 50f;  // ระยะ melee         เปลี่ยนเป็น 60
     public float LeashRange     { get; set; } = 400f; // ระยะสูงสุดก่อน return to spawn
 
     // ── Combat ────────────────────────────────────────────────────────────────
@@ -97,6 +98,15 @@ public class Enemy : GameObject
     // 4 frames × 0.10 s — ตรงกับ gettingup animation ที่ลงทะเบียนใน Initialize
     private const float GettingUpAnimDuration = 4 * 0.10f + 0.31f;
     private float _gettingUpTimer;
+
+    // ── Death ─────────────────────────────────────────────────────────────────
+    // 7 frames × 0.13 s — ตรงกับ dead animation ที่ลงทะเบียนใน Initialize
+    private const float DeadAnimDuration = 7 * 0.13f;
+    private float _deadTimer;
+
+    // Stunned
+    private const float StunnedAnimDuration = 5 * 0.10f * 10;
+    private float _stunnedTimer;
 
     // ═════════════════════════════════════════════════════════════════════════
 
@@ -153,6 +163,7 @@ public class Enemy : GameObject
         if (_patrolWaitTimer  > 0f) _patrolWaitTimer  -= dt;
         if (_tauntTimer       > 0f) _tauntTimer       -= dt;
         if (_gettingUpTimer   > 0f) _gettingUpTimer   -= dt;
+        if (_stunnedTimer     > 0f) _stunnedTimer     -= dt;
 
         // AI decision → ตั้ง VelocityX
         UpdateAI();
@@ -260,6 +271,13 @@ public class Enemy : GameObject
                     VelocityX = 0f;
                     ChangeState(EnemyState.Patrolling);
                 }
+                break;
+
+            // Stunned
+            case EnemyState.Stunned:
+                VelocityX = 0f;
+                if (_stunnedTimer <= 0f)
+                    ChangeState(EnemyState.Patrolling);
                 break;
         }
     }
@@ -416,6 +434,9 @@ public class Enemy : GameObject
             case EnemyState.Dead:
                 _animator.Play("dead");
                 break;
+            case EnemyState.Stunned:
+                _animator.Play("stunned");
+                break;
             default:
                 _animator.Play("standing");
                 break;
@@ -551,6 +572,12 @@ public class Enemy : GameObject
             case EnemyState.GettingUp:
                 _gettingUpTimer = GettingUpAnimDuration;
                 break;
+            case EnemyState.Dead:
+                _deadTimer = DeadAnimDuration;
+                break;
+            case EnemyState.Stunned:
+                _stunnedTimer = StunnedAnimDuration;
+                break;
         }
 
         State = newState;
@@ -579,6 +606,12 @@ public class Enemy : GameObject
         VelocityY = 0f;
         ChangeState(EnemyState.Dead);
         _animator.Play("dead"); // force ทันที — Update() จะ return early ก่อนถึง SyncAnimation
+    }
+
+    public void Stun()
+    {
+        if (State == EnemyState.Stunned) return;
+        ChangeState(EnemyState.Stunned);
     }
 }
 
