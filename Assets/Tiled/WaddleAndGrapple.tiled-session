@@ -1,0 +1,187 @@
+{
+    "activeFile": "Spike.tsx",
+    "expandedProjectPaths": [
+        "Aseprite/Enemy/Enemy2",
+        ".",
+        "Aseprite/Enemy/Enemy4",
+        "Aseprite/Enemy/Enemy1",
+        "Aseprite/Collectibles",
+        "Aseprite/Enemy/Enemy3",
+        "Aseprite/Enemy"
+    ],
+    "exportAsImage.drawObjectLabels": true,
+    "exportAsImage.drawTileGrid": true,
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "C:/Users/Win10/Desktop/testtest.tmx": {
+            "scale": 0.5046875,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 913.4365325077401,
+                "y": 406.1919504643963
+            }
+        },
+        "DoubleJump.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Enemy1.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Enemy2.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Enemy3.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Enemy4.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Fish.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Floating Laser.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Large Saw-SpriteSheet.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Large Saw.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "LargeSaw.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Laser.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Level1.tmj": {
+            "scale": 2,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 227,
+                "y": 251.5
+            }
+        },
+        "Level1.tmx": {
+            "expandedObjectLayers": [
+                2,
+                4
+            ],
+            "scale": 0.75,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 4154.666666666666,
+                "y": 262.66666666666663
+            }
+        },
+        "Level2.tmx": {
+            "expandedObjectLayers": [
+                2,
+                3
+            ],
+            "scale": 0.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 2918,
+                "y": 678
+            }
+        },
+        "Level3.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 0.25,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 3212,
+                "y": 892
+            }
+        },
+        "LevelFinished.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "LevelTileSet.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 4
+        },
+        "Medium Saw.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "MediumSaw.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 8
+        },
+        "SlowDown.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Small Saw.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "SmallSaw.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 11
+        },
+        "SpeedUp.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Spike.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 4
+        },
+        "test.tmj": {
+            "scale": 0.75,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 642.6666666666666,
+                "y": 406.66666666666674
+            }
+        }
+    },
+    "last.exportedFilePath": "C:/Users/Win10/Desktop/yah/School/WaddleAndGrapple/Assets/Tiled",
+    "last.imagePath": "C:/Users/Win10/Desktop/yah/School/WaddleAndGrapple/Assets/Aseprite/Enemy/Enemy4",
+    "map.fixedSize": false,
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "openFiles": [
+        "Spike.tsx"
+    ],
+    "project": "WaddleAndGrapple.tiled-project",
+    "recentFiles": [
+        "Medium Saw.tsx",
+        "Large Saw.tsx",
+        "Level1.tmj",
+        "Enemy4.tsx",
+        "Enemy3.tsx",
+        "Enemy2.tsx",
+        "Enemy1.tsx",
+        "SpeedUp.tsx",
+        "SlowDown.tsx",
+        "LevelFinished.tsx",
+        "DoubleJump.tsx",
+        "Floating Laser.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.margin": 0,
+    "tileset.tileSize": {
+        "height": 48,
+        "width": 48
+    }
+}
