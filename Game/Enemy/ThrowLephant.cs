@@ -92,7 +92,7 @@ public class ThrowLephant : Enemy
         // TODO: แทนที่ "Enemy/Enemy-SpriteSheet" ด้วย path spritesheet จริง
         //       และปรับ rows/columns/totalFrames ให้ตรงกับไฟล์
         var f = new AnimationFactory(
-            ResourceManager.Instance.GetTexture("Enemy3-SpriteSheet"),
+            ResourceManager.Instance.GetTexture("Enemy/Enemy3-SpriteSheet"),
             rows: 3, columns: 6
         );
 

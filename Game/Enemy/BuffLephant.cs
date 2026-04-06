@@ -128,7 +128,7 @@ public class BuffLephant : GameObject
         // TODO: แทนที่ "Enemy/Enemy-SpriteSheet" ด้วย path spritesheet จริง
         //       และปรับ rows/columns/totalFrames ให้ตรงกับไฟล์
         var f = new AnimationFactory(
-            ResourceManager.Instance.GetTexture("Enemy2-SpriteSheet"),
+            ResourceManager.Instance.GetTexture("Enemy/Enemy2-SpriteSheet"),
             rows: 9, columns: 8
         );
 

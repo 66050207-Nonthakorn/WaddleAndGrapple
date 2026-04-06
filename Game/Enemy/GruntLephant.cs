@@ -123,7 +123,7 @@ public class GruntLephant : Enemy
         // TODO: แทนที่ "Enemy/Enemy-SpriteSheet" ด้วย path spritesheet จริง
         //       และปรับ rows/columns/totalFrames ให้ตรงกับไฟล์
         var f = new AnimationFactory(
-            ResourceManager.Instance.GetTexture("Enemy1-SpriteSheet"),
+            ResourceManager.Instance.GetTexture("Enemy/Enemy1-SpriteSheet"),
             rows: 8, columns: 8
         );
 

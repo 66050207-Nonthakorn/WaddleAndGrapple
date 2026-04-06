@@ -60,7 +60,7 @@ public class ThrowingHammer : GameObject
 
         var animator = AddComponent<Animator>();
         var f = new AnimationFactory(
-            ResourceManager.Instance.GetTexture("ThrowProjectile-SpriteSheet"),
+            ResourceManager.Instance.GetTexture("Enemy/ThrowProjectile-SpriteSheet"),
             rows: 1, columns: 5
         );
         animator.AddAnimation("spin9arm", f.CreateFromRow(row: 0, totalFrames: 5, frameDuration: 0.10f));

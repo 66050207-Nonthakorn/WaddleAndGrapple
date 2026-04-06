@@ -82,7 +82,7 @@ public class E1eP4MKII : Enemy
         // TODO: แทนที่ "Enemy/Enemy-SpriteSheet" ด้วย path spritesheet จริง
         //       และปรับ rows/columns/totalFrames ให้ตรงกับไฟล์
         var f1 = new AnimationFactory(
-            ResourceManager.Instance.GetTexture("Enemy4-SpriteSheet"),
+            ResourceManager.Instance.GetTexture("Enemy/Enemy4-SpriteSheet"),
             rows: 3, columns: 8
         );
 
@@ -91,7 +91,7 @@ public class E1eP4MKII : Enemy
         _animator.AddAnimation("explode1", f1.CreateFromRow(row: 2, totalFrames: 2, frameDuration: 0.13f, isLooping: false));
 
         var f2 = new AnimationFactory(
-            ResourceManager.Instance.GetTexture("Explosion-SpriteSheet"),
+            ResourceManager.Instance.GetTexture("Enemy/Explosion-SpriteSheet"),
             rows: 1, columns: 7
         );
 
