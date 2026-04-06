@@ -119,8 +119,7 @@ public class IcePickaxe
 
             case PickaxeState.Flying:
                 UpdateFlight(dt);
-                if (InputManager.Instance.IsMouseButtonPressed(0) ||
-                    InputManager.Instance.IsKeyPressed(Keys.E))
+                if (InputManager.Instance.IsMouseButtonPressed(1))
                     StartRecall();
                 break;
 
@@ -485,10 +484,10 @@ public class IcePickaxe
     /// </summary>
     private void HandleChargeAndThrow(float dt)
     {
-        bool rightHeld     = InputManager.Instance.IsMouseButtonDown(1);
-        bool rightReleased = InputManager.Instance.IsMouseButtonReleased(1);
+        bool rightHeld     = InputManager.Instance.IsMouseButtonDown(0);
+        bool rightReleased = InputManager.Instance.IsMouseButtonReleased(0);
 
-        // คลายล็อกเมื่อปล่อยคลิกขวา (ป้องกันชาร์จซ้ำหลัง launch)
+        // คลายล็อกเมื่อปล่อยคลิกซ้าย (ป้องกันชาร์จซ้ำหลัง launch)
         if (rightReleased) SuppressCharge = false;
 
         if (rightHeld && !SuppressCharge)
@@ -606,10 +605,8 @@ public class IcePickaxe
     private void HandleHookedInput(float dt)
     {
         // ── ไต่เชือก: W/↑ = ขึ้น, S/↓ = ลง ────────────────────────────────
-        bool climbUp   = InputManager.Instance.IsKeyDown(Keys.W)
-                      || InputManager.Instance.IsKeyDown(Keys.Up);
-        bool climbDown = InputManager.Instance.IsKeyDown(Keys.S)
-                      || InputManager.Instance.IsKeyDown(Keys.Down);
+        bool climbUp   = InputManager.Instance.IsKeyDown(Keys.W);
+        bool climbDown = InputManager.Instance.IsKeyDown(Keys.S);
 
         if (climbUp)   _ropeLength -= ClimbSpeed * dt;
         if (climbDown) _ropeLength += ClimbSpeed * dt;
@@ -617,7 +614,7 @@ public class IcePickaxe
         _ropeLength = Math.Max(_ropeLength, MinRopeLength);
 
         // ── คลิกซ้าย / E = ดึงเชือกกลับ ─────────────────────────────────────
-        if (InputManager.Instance.IsMouseButtonPressed(0) ||
+        if (InputManager.Instance.IsMouseButtonPressed(1) ||
             InputManager.Instance.IsKeyPressed(Keys.E))
         {
             StartRecall();
