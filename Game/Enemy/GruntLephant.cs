@@ -596,6 +596,7 @@ public class GruntLephant : Enemy
     public override void SetSolids(List<Rectangle> solids) => _solidRects = solids;
 
     public override Rectangle ColliderBounds => _collider?.Bounds ?? Rectangle.Empty;
+    public override bool IsAlive => State != GruntLephantState.Dead;
 
     /// <summary>key ที่ใช้ตอน AddGameObject — ตั้งจาก Level เพื่อให้ลบตัวเองออกจาก scene ได้</summary>
 
@@ -619,6 +620,7 @@ public class GruntLephant : Enemy
         VelocityX = 0f;
         VelocityY = 0f;
         ChangeState(GruntLephantState.Dead);
+        _animator.Play("dead");
     }
 
     public override void Stun()

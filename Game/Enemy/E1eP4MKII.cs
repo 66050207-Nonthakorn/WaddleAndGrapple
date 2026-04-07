@@ -397,6 +397,7 @@ public class E1eP4MKII : Enemy
     public override void SetSolids(List<Rectangle> solids) => _solidRects = solids;
 
     public override Rectangle ColliderBounds => _collider?.Bounds ?? Rectangle.Empty;
+    public override bool IsAlive => State != E1eP4MKIIState.Dead;
 
     /// <summary>เรียกจาก hazard/trap หรือ Player เมื่อต้องการกำจัด enemy</summary>
     public override void Die()
@@ -405,6 +406,7 @@ public class E1eP4MKII : Enemy
         VelocityX = 0f;
         VelocityY = 0f;
         ChangeState(E1eP4MKIIState.Dead);
+        _animator.Play("dead");
     }
 
     public override void Stun()
