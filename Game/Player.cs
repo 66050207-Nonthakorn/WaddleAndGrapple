@@ -40,8 +40,8 @@ public class Player : GameObject
     public const int   SlideLoopCount  = 2;       // ← เปลี่ยนตรงนี้เพื่อยืด/สั้นระยะสไลด์ (จำนวนรอบของ row 13)
     public const float SlideDuration   = 0.083f * 4f * (1 + SlideLoopCount); // slidestart 1× + row13 N×
     public const float WallSlideSpeed    = 60f;    // px/s
-    public const float WallJumpXMultiplier = 2.8f;  // ตัวคูณแรงพุ่งแนวนอนตอน wall jump
-    public const float WallJumpYMultiplier = 1.5f;  // ตัวคูณแรงพุ่งแนวตั้งตอน wall jump (> 1 = สูงขึ้น)
+    public const float WallJumpXMultiplier = 1.3f;  // ตัวคูณแรงพุ่งแนวนอนตอน wall jump
+    public const float WallJumpYMultiplier = 0.8f;  // ตัวคูณแรงพุ่งแนวตั้งตอน wall jump (> 1 = สูงขึ้น)
     public const float RopeLaunchSpeed  = 450f;   // ความเร็วดึงตัวเองไปตามเชือก (px/s)
     public const float SwingXBoost      = 600f;   // แรง X เพิ่มเติมตอนแกว่งเชือก (px/s²) ↑ = แกว่งแรงขึ้น
 
