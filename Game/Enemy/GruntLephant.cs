@@ -5,6 +5,7 @@ using WaddleAndGrapple.Engine.Components.Physics;
 using WaddleAndGrapple.Engine.Managers;
 using WaddleAndGrapple.Engine.Utils;
 using Microsoft.Xna.Framework;
+using System;
 
 namespace WaddleAndGrapple.Game;
 
@@ -16,11 +17,16 @@ public enum GruntLephantState
     Taunting,         // เล่น emote เมื่อเห็น player ก่อน chase
     Chasing,
     Attacking,
-    FallingDown,      // ตกขอบ — อยู่กลางอากาศ
-    GettingUp,        // แตะพื้นหลังตก — รอ animation จบก่อน resume
-    ReturningToSpawn,
     Stunned,
     Dead,
+}
+
+// ── Stunned Animation Sequence ────────────────────────────────────────────────
+public enum StunnedPhase
+{
+    Slip,             // สไลด์ลงพื้น
+    KnockedOut,       // ล้มนอน stunned
+    GettingUp,        // ลุกขึ้น
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -32,25 +38,21 @@ public class GruntLephant : Enemy
     private const float MaxFallSpeed = 700f;   // px/s
 
     // ── Collider Size ─────────────────────────────────────────────────────────
-    private const int EnemyWidth  = 48; // เปลี่ยนเป็น 80 พอทำ Level จริงเสร็จ
-    private const int EnemyHeight = 64; // เปลี่ยนเป็น 120 พอทำ Level จริงเสร็จ
-
-    // ── Temporary Ground (ลบเมื่อ tiles พร้อม) ───────────────────────────────
-    // private const float TempGroundY = 400f;
+    private const int EnemyWidth  = 48;
+    private const int EnemyHeight = 64;
 
     // ── Sprite Scale ──────────────────────────────────────────────────────────
-    public const float DisplayScale = 1f; // เปลี่ยนเป็น 2f พอทำ Level จริงเสร็จ
+    public const float DisplayScale = 1f;
 
     // ── Movement Speeds ───────────────────────────────────────────────────────
     public float PatrolSpeed { get; set; } = 100f;
-    public float ChaseSpeed  { get; set; } = 200f;
-    public float ReturnSpeed { get; set; } = 220f;
+    public float ChaseSpeed  { get; set; } = 130f;
 
     // ── AI Ranges ─────────────────────────────────────────────────────────────
     public float PatrolRadius   { get; set; } = 150f; // ระยะ patrol ซ้าย/ขวาจาก spawn
     public float DetectionRange { get; set; } = 250f; // ระยะมองเห็น player
-    public float AttackRange    { get; set; } = 50f;  // ระยะ melee         เปลี่ยนเป็น 60
-    public float LeashRange     { get; set; } = 400f; // ระยะสูงสุดก่อน return to spawn
+    public float AttackRange    { get; set; } = 50f;  // ระยะที่ attack ได้
+    public float ChaseTolerance { get; set; } = 20f;  // tolerance เมื่อเข้าใกล้ player ในแกน X เพื่อไม่ให้ศัตรูหันซ้ายขวารัวๆ
 
     // ── Combat ────────────────────────────────────────────────────────────────
     public float AttackCooldown { get; set; } = 2f;
@@ -86,27 +88,20 @@ public class GruntLephant : Enemy
     private List<Rectangle>  _solidRects = [];
 
     // ── Patrol Wait ───────────────────────────────────────────────────────────
-    private const float PatrolWaitDuration = 3.5f;  // วินาทีหยุดที่ขอบ patrol ก่อนเดินต่อ
+    private const float PatrolWaitDuration = 3.5f;  // วินาทีหยุดที่ขอบ patrol ก่อนหันแล้วเดินต่อ
     private float _patrolWaitTimer;
-
-    // ── Taunt ─────────────────────────────────────────────────────────────────
-    // 7 frames × 0.083 s — ตรงกับ emote animation ที่ลงทะเบียนใน Initialize
-    private const float TauntAnimDuration = 7 * 0.083f + 0.10f;
-    private float _tauntTimer;
-
-    // ── Getting Up ────────────────────────────────────────────────────────────
-    // 4 frames × 0.10 s — ตรงกับ gettingup animation ที่ลงทะเบียนใน Initialize
-    private const float GettingUpAnimDuration = 4 * 0.10f + 0.31f;
-    private float _gettingUpTimer;
 
     // ── Death ─────────────────────────────────────────────────────────────────
     // 7 frames × 0.13 s — ตรงกับ dead animation ที่ลงทะเบียนใน Initialize
     private const float DeadAnimDuration = 7 * 0.13f;
     // private float _deadTimer;
 
-    // Stunned
-    private const float StunnedAnimDuration = 5 * 0.10f * 10;
+    // ── Stunned ───────────────────────────────────────────────────────────
+    private const float SlipAnimDuration      = 4 * 0.083f;      // 4 frames × 0.083s
+    private const float KnockedOutDuration    = 3f;            // นอนค้างอยู่เป็นเวลา ... วินาที
+    private const float GettingUpAnimDuration = 4 * 0.10f;       // 4 frames × 0.10s
     private float _stunnedTimer;
+    private StunnedPhase _stunnedPhase = StunnedPhase.Slip;
 
     // ═════════════════════════════════════════════════════════════════════════
 
@@ -120,20 +115,18 @@ public class GruntLephant : Enemy
         _spriteRenderer            = GetComponent<SpriteRenderer>();
         _spriteRenderer.LayerDepth = 0.5f;
 
-        // TODO: แทนที่ "Enemy/Enemy-SpriteSheet" ด้วย path spritesheet จริง
-        //       และปรับ rows/columns/totalFrames ให้ตรงกับไฟล์
         var f = new AnimationFactory(
             ResourceManager.Instance.GetTexture("Enemy/Enemy1-SpriteSheet"),
             rows: 8, columns: 8
         );
 
         _animator.AddAnimation("standing",   f.CreateFromRow(row: 0, totalFrames: 1, frameDuration: 0.083f));
-        _animator.AddAnimation("emote",      f.CreateFromRow(row: 1, totalFrames: 7, frameDuration: 0.083f, isLooping: false));
+        _animator.AddAnimation("idle",       f.CreateFromRow(row: 1, totalFrames: 7, frameDuration: 0.16f));
         _animator.AddAnimation("walk",       f.CreateFromRow(row: 2, totalFrames: 8, frameDuration: 0.089f));
-        _animator.AddAnimation("run",        f.CreateFromRow(row: 2, totalFrames: 8, frameDuration: 0.060f));
+        _animator.AddAnimation("run",        f.CreateFromRow(row: 2, totalFrames: 8, frameDuration: 0.067f));
         _animator.AddAnimation("attack",     f.CreateFromRow(row: 3, totalFrames: 7, frameDuration: 0.083f, isLooping: false));
         _animator.AddAnimation("dead",       f.CreateFromRow(row: 4, totalFrames: 7, frameDuration: 0.13f, isLooping: false));
-        _animator.AddAnimation("freefall",   f.CreateFromRow(row: 5, totalFrames: 4, frameDuration: 0.083f));
+        _animator.AddAnimation("slip",       f.CreateFromRow(row: 5, totalFrames: 4, frameDuration: 0.083f, isLooping: false));
         _animator.AddAnimation("stunned",    f.CreateFromRow(row: 6, totalFrames: 5, frameDuration: 0.10f));
         _animator.AddAnimation("gettingup",  f.CreateFromRow(row: 7, totalFrames: 4, frameDuration: 0.10f, isLooping: false));
 
@@ -165,8 +158,6 @@ public class GruntLephant : Enemy
         if (_attackTimer      > 0f) _attackTimer      -= dt;
         if (_attackAnimTimer  > 0f) _attackAnimTimer  -= dt;
         if (_patrolWaitTimer  > 0f) _patrolWaitTimer  -= dt;
-        if (_tauntTimer       > 0f) _tauntTimer       -= dt;
-        if (_gettingUpTimer   > 0f) _gettingUpTimer   -= dt;
         if (_stunnedTimer     > 0f) _stunnedTimer     -= dt;
 
         // AI decision → ตั้ง VelocityX
@@ -175,7 +166,6 @@ public class GruntLephant : Enemy
         // Physics
         ApplyGravity(dt);
         MoveAndCollide(dt);
-        HandleAirborneTransitions();
 
         // Animation + sprite flip
         SyncAnimation();
@@ -191,19 +181,9 @@ public class GruntLephant : Enemy
     private void UpdateAI()
     {
         if (_player == null) return;
-
-        float distToSpawn  = System.MathF.Abs(Position.X - _spawnPosition.X);
+        
         float distToPlayer  = Vector2.Distance(Position, _player.Position);
         bool  playerInSight = CanSeePlayer(distToPlayer);
-
-        // Leash: ออกไกลเกิน LeashRange → กลับ spawn (ไม่ interrupt ขณะกลางอากาศหรือลุกขึ้น)
-        if (distToSpawn > LeashRange
-            && State != GruntLephantState.ReturningToSpawn
-            && State != GruntLephantState.FallingDown
-            && State != GruntLephantState.GettingUp)
-        {
-            ChangeState(GruntLephantState.ReturningToSpawn);
-        }
 
         switch (State)
         {
@@ -216,35 +196,26 @@ public class GruntLephant : Enemy
             case GruntLephantState.Patrolling:
                 if (playerInSight)
                 {
-                    ChangeState(GruntLephantState.Taunting);
+                    ChangeState(GruntLephantState.Chasing);
                     break;
                 }
                 HandlePatrol();
-                break;
-
-            // ── Taunting: หยุด หันหา player เล่น emote แล้วค่อย chase ─────────
-            case GruntLephantState.Taunting:
-                VelocityX = 0f;
-                FacingDirection = _player.Position.X > Position.X ? 1 : -1;
-                if (_tauntTimer <= 0f)
-                    ChangeState(GruntLephantState.Chasing);
                 break;
 
             // ── Chase: วิ่งตาม player ─────────────────────────────────────────
             case GruntLephantState.Chasing:
                 if (!playerInSight)
                 {
-                    // ยังอยู่ในเขต patrol → กลับ patrol; ออกนอกเขต → คืน spawn
-                    ChangeState(distToSpawn <= PatrolRadius
-                        ? GruntLephantState.Patrolling
-                        : GruntLephantState.ReturningToSpawn);
+                    ChangeState(GruntLephantState.Patrolling);
                     break;
                 }
+
                 if (distToPlayer <= AttackRange)
                 {
                     TryMeleeAttack();
                     break;
                 }
+
                 ChasePlayer();
                 break;
 
@@ -255,33 +226,10 @@ public class GruntLephant : Enemy
                     ChangeState(playerInSight ? GruntLephantState.Chasing : GruntLephantState.Patrolling);
                 break;
 
-            // ── Falling: physics จัดการ ไม่ควบคุม horizontal ──────────────────
-            case GruntLephantState.FallingDown:
-                VelocityX = 0f;
-                break;
-
-            // ── Getting Up: หยุดนิ่ง รอ animation จบ → กลับ patrol ───────────
-            case GruntLephantState.GettingUp:
-                VelocityX = 0f;
-                if (_gettingUpTimer <= 0f)
-                    ChangeState(GruntLephantState.Patrolling);
-                break;
-
-            // ── Return to Spawn ───────────────────────────────────────────────
-            case GruntLephantState.ReturningToSpawn:
-                HandleReturnToSpawn();
-                if (distToSpawn < 10f)
-                {
-                    VelocityX = 0f;
-                    ChangeState(GruntLephantState.Patrolling);
-                }
-                break;
-
-            // Stunned
+            // Stunned - Animation Sequence
             case GruntLephantState.Stunned:
                 VelocityX = 0f;
-                if (_stunnedTimer <= 0f)
-                    ChangeState(GruntLephantState.Patrolling);
+                HandleStunnedSequence();
                 break;
         }
     }
@@ -314,15 +262,106 @@ public class GruntLephant : Enemy
             return;
         }
 
+        // ตรวจว่ามีพื้นหน้าศัตรู หากไม่มี → หันกลับ
+        if (!IsGroundAheadInDirection(_patrolDirection))
+        {
+            _patrolDirection *= -1;
+            _patrolWaitTimer = PatrolWaitDuration;
+            VelocityX = 0f;
+            return;
+        }
+
         FacingDirection = _patrolDirection;
         VelocityX       = _patrolDirection * PatrolSpeed;
     }
 
     private void ChasePlayer()
     {
-        float dir = _player.Position.X > Position.X ? 1f : -1f;
+        float dirToPlayer = _player.Position.X - Position.X;
+        
+        // ถ้าผู้เล่นอยู่ใกล้พอในแกน X → หยุดเดิน เพื่อไม่ให้ FacingDirection เปลี่ยนระหว่างซ้ายกับขวารัวๆ
+        // FacingDirection ยังคงเป็นค่าเดิม
+        if (Math.Abs(dirToPlayer) <= ChaseTolerance)
+        {
+            VelocityX = 0f;
+            return;
+        }
+
+        float dir = dirToPlayer > 0f ? 1f : -1f;
+
+        // ตรวจว่ามีพื้นหน้าศัตรูหรือไม่ หากไม่มีให้ยืนจ้องหน้าเฉยๆ
+        if (!IsGroundAheadInDirection((int)dir))
+        {
+            VelocityX = 0f;
+            return;
+        }
+
         FacingDirection = (int)dir;
         VelocityX       = dir * ChaseSpeed;
+    }
+
+    /// <summary>
+    /// จัดการ animation sequence สำหรับ knockout:
+    /// Slip → KnockedOut (นอนค้าง) → GettingUp
+    /// </summary>
+    private void HandleStunnedSequence()
+    {
+        switch (_stunnedPhase)
+        {
+            case StunnedPhase.Slip:
+                // อยู่ใน slip animation หรือจบแล้ว?
+                if (_animator.IsCurrentAnimationFinished)
+                {
+                    _stunnedPhase = StunnedPhase.KnockedOut;
+                    _stunnedTimer = KnockedOutDuration;
+                }
+                break;
+
+            case StunnedPhase.KnockedOut:
+                // นอนค้างและรอ timer หมด
+                if (_stunnedTimer <= 0f)
+                {
+                    _stunnedPhase = StunnedPhase.GettingUp;
+                    _stunnedTimer = GettingUpAnimDuration;
+                }
+                break;
+
+            case StunnedPhase.GettingUp:
+                // เล่น getting up animation จนจบ
+                if (_animator.IsCurrentAnimationFinished)
+                {
+                    // ลุกขึ้นสำเร็จ → กลับไปเดิน
+                    ChangeState(GruntLephantState.Patrolling);
+                }
+                break;
+        }
+    }
+
+    /// <summary>
+    /// ตรวจว่าหากเดินไปในทิศที่กำหนด จะมีพื้นรับตัวใต้ฟุตหรือไม่
+    /// คืน true ถ้าเดินต่อได้ (มีพื้นหรือจะชนกำแพง)
+    /// คืน false ถ้าจะตกลงไป (ไม่มีพื้น) → ต้องถอยหรือหันกลับ
+    /// </summary>
+    private bool IsGroundAheadInDirection(int direction)
+    {
+        // คำนวณตำแหน่ง "ฟุต" ของศัตรู (ล่างสุด) และเลื่อนไปข้างหน้า
+        float checkX = Position.X + direction * (EnemyWidth / 2f + 5f); // 5px พอเพื่อ lookahead
+        float checkY = Position.Y + EnemyHeight / 2f + 5f; // ต่ำกว่าฟุตเล็กน้อย
+
+        // ตรวจทั้ง solid rectangles ว่ามีตัวไหนสนับสนุนศัตรู
+        // (โดยเฉพาะตรวจว่ามีพื้นใต้ขา)
+        foreach (var solid in _solidRects)
+        {
+            // ถ้า checkY อยู่ในช่องโล่ง (ไม่ชนเพดาน/พื้น) และ checkX อยู่บน solid
+            // ← นั่นแปลว่ามี "พื้น" ให้ยืน
+            if (solid.Left <= checkX && checkX <= solid.Right
+                && solid.Top <= checkY && checkY <= solid.Bottom)
+            {
+                return true; // มีพื้นรับ
+            }
+        }
+
+        return false; // ไม่มีพื้น → จะตกลงไป
     }
 
     private void TryMeleeAttack()
@@ -340,13 +379,6 @@ public class GruntLephant : Enemy
         _player.Die();
     }
 
-    private void HandleReturnToSpawn()
-    {
-        float dir = _spawnPosition.X > Position.X ? 1f : -1f;
-        FacingDirection = (int)dir;
-        VelocityX       = dir * ReturnSpeed;
-    }
-
     // ══════════════════════════════════════════════════════════════════════════
     // Line-of-Sight Raycast
     // ══════════════════════════════════════════════════════════════════════════
@@ -361,9 +393,11 @@ public class GruntLephant : Enemy
     {
         if (distToPlayer > DetectionRange) return false;
 
-        // ตรวจว่า player อยู่ด้านที่ศัตรูหัน
-        float dirToPlayer = _player.Position.X - Position.X;
-        if (FacingDirection * dirToPlayer < 0f) return false;
+        if (State == GruntLephantState.Patrolling) {
+            // ตรวจว่า player อยู่ด้านที่ศัตรูหัน
+            float dirToPlayer = _player.Position.X - Position.X;
+            if (FacingDirection * dirToPlayer < 0f) return false;
+        }
 
         // Raycast: solid ตัวไหนบัง line of sight → มองไม่เห็น
         foreach (var solid in _solidRects)
@@ -419,58 +453,36 @@ public class GruntLephant : Enemy
             case GruntLephantState.Patrolling:
                 _animator.Play(_patrolWaitTimer > 0f ? "standing" : "walk");
                 break;
-            case GruntLephantState.Taunting:
-                _animator.Play("emote");
-                break;
-            case GruntLephantState.ReturningToSpawn:
             case GruntLephantState.Chasing:
                 _animator.Play("run");
                 break;
             case GruntLephantState.Attacking:
                 _animator.Play("attack");
                 break;
-            case GruntLephantState.FallingDown:
-                _animator.Play("freefall");
-                break;
-            case GruntLephantState.GettingUp:
-                _animator.Play("gettingup");
-                break;
             case GruntLephantState.Dead:
                 _animator.Play("dead");
                 break;
             case GruntLephantState.Stunned:
-                _animator.Play("stunned");
+                // เล่น animation sequence: slip → stunned → gettingup
+                switch (_stunnedPhase)
+                {
+                    case StunnedPhase.Slip:
+                        _animator.Play("slip");
+                        break;
+                    case StunnedPhase.KnockedOut:
+                        _animator.Play("stunned");
+                        break;
+                    case StunnedPhase.GettingUp:
+                        _animator.Play("gettingup");
+                        break;
+                }
                 break;
             default:
                 _animator.Play("standing");
                 break;
         }
     }
-
-    // ══════════════════════════════════════════════════════════════════════════
-    // Airborne Transitions (เรียกหลัง MoveAndCollide ทุก frame)
-    // ══════════════════════════════════════════════════════════════════════════
-
-    private void HandleAirborneTransitions()
-    {
-        switch (State)
-        {
-            // เดินตกขอบ → เข้า FallingDown
-            case GruntLephantState.Patrolling:
-            case GruntLephantState.Chasing:
-            case GruntLephantState.ReturningToSpawn:
-                if (!IsGrounded)
-                    ChangeState(GruntLephantState.FallingDown);
-                break;
-
-            // แตะพื้นหลังตก → เข้า GettingUp
-            case GruntLephantState.FallingDown:
-                if (IsGrounded)
-                    ChangeState(GruntLephantState.GettingUp);
-                break;
-        }
-    }
-
+    
     // ══════════════════════════════════════════════════════════════════════════
     // Physics (เหมือน Player)
     // ══════════════════════════════════════════════════════════════════════════
@@ -496,12 +508,18 @@ public class GruntLephant : Enemy
             if (VelocityX > 0f)
             {
                 Position = new Vector2(solid.Left - EnemyWidth / 2f, Position.Y);
-                if (State == GruntLephantState.Patrolling) _patrolDirection = -1;
+                if (State == GruntLephantState.Patrolling) {
+                    _patrolDirection = -1;
+                    _patrolWaitTimer = PatrolWaitDuration;
+                }
             }
             else if (VelocityX < 0f)
             {
                 Position = new Vector2(solid.Right + EnemyWidth / 2f, Position.Y);
-                if (State == GruntLephantState.Patrolling) _patrolDirection = 1;
+                if (State == GruntLephantState.Patrolling) {
+                    _patrolDirection = 1;
+                    _patrolWaitTimer = PatrolWaitDuration;
+                }
             }
             VelocityX = 0f;
             UpdateColliderBounds();
@@ -531,18 +549,6 @@ public class GruntLephant : Enemy
             VelocityY = 0f;
             UpdateColliderBounds();
         }
-
-        // ── Temp Ground ───────────────────────────────────────────────────────
-        // if (_solidRects.Count == 0)
-        // {
-        //     float groundTopY = TempGroundY - EnemyHeight / 2f;
-        //     if (Position.Y >= groundTopY)
-        //     {
-        //         Position   = new Vector2(Position.X, groundTopY);
-        //         VelocityY  = 0f;
-        //         IsGrounded = true;
-        //     }
-        // }
     }
 
     private void UpdateColliderBounds()
@@ -569,17 +575,10 @@ public class GruntLephant : Enemy
             case GruntLephantState.Patrolling:
                 _patrolWaitTimer = 0f;
                 break;
-            case GruntLephantState.Taunting:
-                _tauntTimer = TauntAnimDuration;
-                break;
-            case GruntLephantState.GettingUp:
-                _gettingUpTimer = GettingUpAnimDuration;
-                break;
-            // case GruntLephantState.Dead:
-            //     _deadTimer = DeadAnimDuration;
-            //     break;
             case GruntLephantState.Stunned:
-                _stunnedTimer = StunnedAnimDuration;
+                // เริ่ม sequence: slip → knocked out → getting up
+                _stunnedPhase = StunnedPhase.Slip;
+                _stunnedTimer = SlipAnimDuration;
                 break;
         }
 
@@ -622,7 +621,7 @@ public class GruntLephant : Enemy
         ChangeState(GruntLephantState.Dead);
     }
 
-    public void Stun()
+    public override void Stun()
     {
         if (State == GruntLephantState.Stunned) return;
         ChangeState(GruntLephantState.Stunned);

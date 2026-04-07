@@ -626,7 +626,7 @@ public class BuffLephant : Enemy
         ChangeState(BuffLephantState.Dead);
     }
 
-    public void Stun()
+    public override void Stun()
     {
         if (State == BuffLephantState.Stunned) return;
         ChangeState(BuffLephantState.Stunned);

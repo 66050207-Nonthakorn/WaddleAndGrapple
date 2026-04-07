@@ -5,6 +5,7 @@ using WaddleAndGrapple.Engine.Components.Physics;
 using WaddleAndGrapple.Engine.Managers;
 using WaddleAndGrapple.Engine.Utils;
 using Microsoft.Xna.Framework;
+using System;
 
 namespace WaddleAndGrapple.Game;
 
@@ -404,6 +405,11 @@ public class E1eP4MKII : Enemy
         VelocityX = 0f;
         VelocityY = 0f;
         ChangeState(E1eP4MKIIState.Dead);
+    }
+
+    public override void Stun()
+    {
+        Console.WriteLine("Stun not implemented yet for this type of enemy");
     }
 }
 

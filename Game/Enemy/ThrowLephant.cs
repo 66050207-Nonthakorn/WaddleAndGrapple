@@ -5,6 +5,7 @@ using WaddleAndGrapple.Engine.Components.Physics;
 using WaddleAndGrapple.Engine.Managers;
 using WaddleAndGrapple.Engine.Utils;
 using Microsoft.Xna.Framework;
+using System;
 
 namespace WaddleAndGrapple.Game;
 
@@ -401,6 +402,11 @@ public class ThrowLephant : Enemy
         VelocityX = 0f;
         VelocityY = 0f;
         ChangeState(ThrowLephantState.Dead);
+    }
+
+    public override void Stun()
+    {
+        Console.WriteLine("Stun not implemented yet for this type of enemy");
     }
 }
 

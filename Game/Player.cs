@@ -933,7 +933,7 @@ public class Player : GameObject
         // ตรวจชน enemy ขณะสไลด์ → enemy ตาย
         foreach (var enemy in _enemies)
             if (_collider.Bounds.Intersects(enemy.ColliderBounds))
-                enemy.Die();
+                enemy.Stun();
 
         // TODO (Phase 3 → Member 3): TankElephant interaction
         //   ตรวจ _collider.Bounds ชน TankElephant.Collider.Bounds

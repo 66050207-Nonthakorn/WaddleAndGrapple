@@ -170,10 +170,8 @@ public class GameMapLoader
             enemy.PatrolRadius   = obj.FloatProp("PatrolRadius",   enemy.PatrolRadius);
             enemy.DetectionRange = obj.FloatProp("DetectionRange", enemy.DetectionRange);
             enemy.AttackRange    = obj.FloatProp("AttackRange",    enemy.AttackRange);
-            enemy.LeashRange     = obj.FloatProp("LeashRange",     enemy.LeashRange);
             enemy.PatrolSpeed    = obj.FloatProp("PatrolSpeed",    enemy.PatrolSpeed);
             enemy.ChaseSpeed     = obj.FloatProp("ChaseSpeed",     enemy.ChaseSpeed);
-            enemy.ReturnSpeed    = obj.FloatProp("ReturnSpeed",    enemy.ReturnSpeed);
             enemy._patrolDirection = obj.IntProp("_patrolDirection", enemy._patrolDirection);
             enemy.SetPlayer(_player);
         });
