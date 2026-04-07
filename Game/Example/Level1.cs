@@ -82,6 +82,7 @@ class Level1 : BaseLevel
         }
 
         var enemies = mapResult.GetSpawned<Enemy>().ToList();
+        player.SetEnemies(enemies);
         foreach (var trap in mapResult.GetSpawned<Trap>())
             trap.Enemies = enemies;
 

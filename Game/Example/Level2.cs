@@ -93,6 +93,11 @@ class Level2 : BaseLevel
             }
         }
 
+        var enemies = mapResult.GetSpawned<Enemy>().ToList();
+        player.SetEnemies(enemies);
+        foreach (var trap in mapResult.GetSpawned<Trap>())
+            trap.Enemies = enemies;
+
         var tiledMap = mapResult.Map;
         int mapTileWidth = tiledMap.TileLayers.Count > 0
             ? tiledMap.TileLayers[0].MapData.GetLength(1)
