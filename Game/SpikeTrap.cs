@@ -27,6 +27,9 @@ public class SpikeTrap : Trap
     public float RetractDuration { get; set; } = 0.2f;
     public float PauseDuration   { get; set; } = 1.5f;
 
+    /// <summary>If true, the spike is permanently extended.</summary>
+    public bool  AlwaysExtended  { get; set; } = false;
+
     /// <summary>Phase shift so multiple spikes don't activate simultaneously.</summary>
     public float PhaseOffset { get; set; } = 0f;
 
@@ -42,12 +45,20 @@ public class SpikeTrap : Trap
     {
         Damage            = 1;
         _stateTimer       = PhaseOffset;
-        SpriteTextureName = SpriteTextureName ?? "pixel";
+        if (SpriteTextureName == null || SpriteTextureName == "pixel")
+            SpriteTextureName = "Traps/Spike/Spike";
         AddComponent<SpikeRenderer>();
     }
 
     protected override void OnUpdate(GameTime gameTime)
     {
+        if (AlwaysExtended)
+        {
+            _spikeState = SpikeState.Extended;
+            _extensionRatio = 1f;
+            return;
+        }
+
         float dt = WorldTime.Dt((float)gameTime.ElapsedGameTime.TotalSeconds);
         _stateTimer += dt;
 

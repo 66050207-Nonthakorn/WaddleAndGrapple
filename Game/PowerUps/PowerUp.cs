@@ -49,6 +49,7 @@ public abstract class PowerUp : Collectible
 
         var anim     = new Animation(sheet, frames, frameDuration: 0.1f, isLooping: true);
         var animator = AddComponent<Animator>();
+        animator.UseBottomLeftAnchor = true;
         animator.AddAnimation("idle", anim);
         animator.Play("idle");
 

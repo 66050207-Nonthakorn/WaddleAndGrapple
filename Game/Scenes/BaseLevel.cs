@@ -25,6 +25,8 @@ public abstract class BaseLevel : Scene
     protected int _collectedFishCount;
     protected int _totalFishInLevel;
     public int LevelIndex;
+    protected int MapWidth { get; set; }
+    protected int MapHeight { get; set; }
 
     // called base update later so that the UI are on top of the game objects
     public override void Setup()
@@ -83,20 +85,45 @@ public abstract class BaseLevel : Scene
 
         base.Update(gameTime);
 
+        // Stop camera following when player falls off the map,
+        // and restore follow when the player is back in playable bounds.
+        if (_trackedPlayer != null && MapHeight > 0)
+        {
+            if (_trackedPlayer.Position.Y > MapHeight)
+            {
+                Camera.FollowTarget = null;
+            }
+            else if (Camera != null && Camera.FollowTarget == null)
+            {
+                Camera.FollowTarget = _trackedPlayer;
+            }
+        }
+
         // Apply section-based camera clamp (Celeste-style: camera stops at section boundary)
         if (Camera != null)
         {
             var section = CheckpointManager.Instance.ActiveSection;
             if (section != null)
             {
-                float half = Camera.Origin.X / Camera.Zoom;
-                Camera.ClampMinX = section.LeftBound + half;
-                Camera.ClampMaxX = section.RightBound - half;
+                float halfX = Camera.Origin.X / Camera.Zoom;
+                float halfY = Camera.Origin.Y / Camera.Zoom;
+                Camera.ClampMinX = section.LeftBound + halfX;
+                Camera.ClampMaxX = section.RightBound - halfX;
+                Camera.ClampMinY = section.TopBound + halfY;
+                Camera.ClampMaxY = section.BottomBound - halfY;
             }
             else
             {
                 Camera.ClampMinX = null;
                 Camera.ClampMaxX = null;
+                Camera.ClampMinY = null;
+                Camera.ClampMaxY = null;
+            }
+
+            // Apply map bounds for top/bottom clamping
+            if (MapWidth > 0 && MapHeight > 0)
+            {
+                Camera.Bounds = new Rectangle(0, 0, MapWidth, MapHeight);
             }
         }
 

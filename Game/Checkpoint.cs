@@ -30,6 +30,12 @@ public class Section
     /// <summary>Right X boundary of this section in world space.</summary>
     public float RightBound { get; set; }
 
+    /// <summary>Top Y boundary of this section in world space.</summary>
+    public float TopBound { get; set; }
+
+    /// <summary>Bottom Y boundary of this section in world space.</summary>
+    public float BottomBound { get; set; }
+
     /// <summary>
     /// Spawn point at the LEFT edge of this section.
     /// Used when the player entered from the left (came from the previous section).

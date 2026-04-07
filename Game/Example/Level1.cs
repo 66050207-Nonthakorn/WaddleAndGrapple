@@ -14,25 +14,6 @@ using GamePlayer = WaddleAndGrapple.Game.Player;
 
 namespace WaddleAndGrapple.Game.Example;
 
-/// <summary>
-/// Level 1 — Redesigned
-///
-///  Section 0 (0–1200):    Safe Zone — เดิน กระโดด Ledge Grab ไม่มีอันตราย
-///  Section 1 (1200–2400): First Enemy — ช้างตัวแรก + platform สูงสามชั้น + DoubleJump
-///  Section 2 (2400–3600): IcePickaxe Test — หลุม 640px บังคับใช้ Grapple ข้าม
-///  Section 3 (3600–4800): Traps + Goal — หนาม + เลื่อยเล็ก + SlowTime ก่อนถึงธง
-///
-/// กระโดดสูงสุด: ~126px (JumpForce 550 / Gravity 1200)
-/// ยืนบนพื้น (floor y=450): player center y=420, feet y=450
-///
-/// Platform reachability (feet start y=450, peak feet y=324):
-///   floor → a1/b1/d1 (y=370, diff=80px) ✓
-///   a1/b1 → a2/b2    (y=295, diff=75px) ✓
-///   b2    → b3        (y=235, diff=60px) ✓
-///   floor → d2        (y=345, diff=105px) ✓  ← ต้องกระโดดเต็มที่
-///   d2    → d3        (y=260, diff=85px) ✓
-///   c1/c2 ต้องใช้ pickaxe เพราะสูงกว่า peak (y < 324)
-/// </summary>
 class Level1 : BaseLevel
 {
     GamePlayer player;
@@ -42,7 +23,7 @@ class Level1 : BaseLevel
     public override void Setup()
     {
         LevelIndex = 1;
-        SetTotalFish(0);
+        SetTotalFish(6);
 
         AudioManager.Instance.PlaySong("Song/Level1");
 
@@ -73,38 +54,6 @@ class Level1 : BaseLevel
         player.SetSpawnPoint(startSpawn);
         RegisterPlayerForProgression(player);
 
-        // ══════════════════════════════════════════════════════════════════════
-        // SOLIDS — ใช้ TileCollider จาก tiles แทน hardcode
-        // ══════════════════════════════════════════════════════════════════════
-        // var solids = new List<Microsoft.Xna.Framework.Rectangle>
-        // {
-        //     // ── พื้นหลัก (ช่องว่าง Grapple Zone: x=2680–3320) ─────────────────
-        //     new(   0, 450, 2680, 150),   // Section 0 + 1 + ต้น 2 (x=0–2679)
-        //     new(3320, 450, 1480, 150),   // ปลาย 2 + Section 3   (x=3320–4799)
-        //
-        //     // ── Section 0 ─────────────────────────────────────────────────────
-        //     // low_ceil: bottom y=405 → blocks standing (top=390) แต่ให้ก้มผ่าน (top=420)
-        //     new( 350, 385, 130, 20),     // low_ceil (x=350–479, bottom y=405) ← CROUCH HERE
-        //     new( 530, 370, 260, 20),     // plat_a1 (x=530–789)  ← หลัง tunnel
-        //     new( 830, 295, 250, 20),     // plat_a2 (x=830–1079) ← Ledge Grab / SpeedBoost
-        //
-        //     // ── Section 1 ─────────────────────────────────────────────────────
-        //     new(1240, 370, 260, 20),     // plat_b1 (x=1240–1499) ← escape route จากช้าง
-        //     new(1700, 295, 250, 20),     // plat_b2 (x=1700–1949)
-        //     new(2050, 235, 250, 20),     // plat_b3 (x=2050–2299) ← DoubleJump reward
-        //
-        //     // ── Section 2 — Grapple Platforms ────────────────────────────────
-        //     // y=305, y=265 < 324 (max jump peak) → ต้องใช้ pickaxe ข้าม
-        //     new(2800, 305, 200, 20),     // plat_c1 (x=2800–2999) ← hook target 1
-        //     new(3080, 265, 180, 20),     // plat_c2 (x=3080–3259) ← hook target 2
-        //
-        //     // ── Section 3 ─────────────────────────────────────────────────────
-        //     new(3700, 370, 280, 20),     // plat_d1 (x=3700–3979) ← SlowTime
-        //     new(4300, 345, 230, 20),     // plat_d2 (x=4300–4529) ← เหนือ traps
-        //     new(4580, 260, 180, 20),     // plat_d3 (x=4580–4759) ← Goal
-        // };
-        // player.SetSolids(solids);
-        // enemy1.SetSolids(solids);
 
         // ══════════════════════════════════════════════════════════════════════
         // TILE MAP — โหลดจาก Level1.tmj ผ่าน GameMapLoader (tile 16×16)
@@ -115,18 +64,42 @@ class Level1 : BaseLevel
         var mapLoader = new GameMapLoader(this, "Assets/Tiled/Level1.tmj", player);
         var mapResult = mapLoader.Load(tileset, baseLayer: 0.5f, solidTileIndices: solidTileIndices);
 
+        foreach (var goal in mapResult.GetSpawned<GoalFlag>())
+        {
+            goal.OnComplete = CompleteLevel;
+        }
+
         if (mapResult.Tilemaps.Count > 0)
         {
             var tileCollider = mapResult.Tilemaps[0].GetComponent<TileCollider>();
             if (tileCollider != null)
-                player.SetSolids(tileCollider.GetSolidRects());
+            {
+                var solids = tileCollider.GetSolidRects();
+                player.SetSolids(solids);
+                foreach (var enemy in mapResult.GetSpawned<Enemy>())
+                    enemy.SetSolids(solids);
+            }
         }
 
+        var enemies = mapResult.GetSpawned<Enemy>().ToList();
+        foreach (var trap in mapResult.GetSpawned<Trap>())
+            trap.Enemies = enemies;
+
         var tiledMap = mapResult.Map;
-        player.SetWorldBounds(
-            left: 0f,
-            right: tiledMap.Width * tiledMap.TileWidth,
-            fallDeathY: (tiledMap.Height * tiledMap.TileHeight) + 160f);
+        int mapTileWidth = tiledMap.TileLayers.Count > 0
+            ? tiledMap.TileLayers[0].MapData.GetLength(1)
+            : tiledMap.Width;
+        int mapTileHeight = tiledMap.TileLayers.Count > 0
+            ? tiledMap.TileLayers[0].MapData.GetLength(0)
+            : tiledMap.Height;
+        // player.SetWorldBounds(
+        //     left: 0f,
+        //     right: tiledMap.Width * tiledMap.TileWidth,
+        //     fallDeathY: (tiledMap.Height * tiledMap.TileHeight) + 1f);
+
+        // Set map dimensions for camera bounds clamping
+        MapWidth = mapTileWidth * tiledMap.TileWidth;
+        MapHeight = mapTileHeight * tiledMap.TileHeight;
 
         // ══════════════════════════════════════════════════════════════════════
         // CHECKPOINTS / SECTIONS — อ่านจาก Room layer ใน Tiled
@@ -145,12 +118,14 @@ class Level1 : BaseLevel
                 Id              = i,
                 LeftBound       = left,
                 RightBound      = right,
+                TopBound        = (int)r.Y,
+                BottomBound     = (int)(r.Y + r.Height),
                 LeftSpawnPoint  = i == 0 ? startSpawn : new Vector2(left + 20, 450),
                 RightSpawnPoint = new Vector2(right - 20, 450),
             });
         }
         CheckpointManager.Instance.RegisterSections(sections.ToArray());
-        CheckpointManager.Instance.UpdateSection(player.Position.X);
+        CheckpointManager.Instance.UpdateSection(player.Position.X, player.Position.Y);
 
         var checkpointAreas = new List<CheckpointData>();
         for (int i = 0; i < sections.Count; i++)

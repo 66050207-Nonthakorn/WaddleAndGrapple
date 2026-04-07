@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Xna.Framework;
 
 namespace WaddleAndGrapple.Game;
@@ -16,11 +17,11 @@ public enum SawSize
 
 public enum SawPlacement
 {
-    Full,              // Full blade, Position = centre
-    FloorMounted,      // Top half visible, Position = bottom-centre (floor contact)
-    CeilingMounted,    // Bottom half visible, Position = top-centre (ceiling contact)
-    LeftWallMounted,   // Left half visible, Position = right-centre (wall contact)
-    RightWallMounted,  // Right half visible, Position = left-centre (wall contact)
+    Full,              // Full blade, Position = left-bottom anchor
+    FloorMounted,      // Top half visible, Position = left-bottom anchor
+    CeilingMounted,    // Bottom half visible, Position = left-bottom anchor
+    LeftWallMounted,   // Left half visible, Position = left-bottom anchor
+    RightWallMounted,  // Right half visible, Position = left-bottom anchor
 }
 
 /// <summary>
@@ -30,8 +31,8 @@ public enum SawPlacement
 public class SawTrap : Trap
 {
     // Movement
-    public float MoveRange      { get; set; } = 150f;
-    public float MoveSpeed      { get; set; } = 80f;
+    public float MoveRange      { get; set; } = 0f;
+    public float MoveSpeed      { get; set; } = 0f;
     public bool  MoveHorizontal { get; set; } = true;
 
     // Appearance
@@ -52,35 +53,68 @@ public class SawTrap : Trap
     public float AnimationFrameDuration { get; set; } = 0.06f;
 
     private Vector2 _startPosition;
-    private float   _moveDirection = 1f;
+    public float   _moveDirection = 1f;
 
     protected override void OnInitialize()
     {
         Damage = 1;
         _startPosition    = Position;
-        SpriteTextureName = SpriteTextureName ?? "pixel";
+        _moveDirection    = MoveRange >= 0f ? 1f : -1f;
+
         if (Size == SawSize.Small) // Small saws always use the Full blade spritesheet row, even if Placement is set to something else.
             AnimationColumns = 3;
+
+        if (string.IsNullOrEmpty(SpriteTextureName) || SpriteTextureName == "pixel")
+        {
+            SpriteTextureName = Size switch
+            {
+                SawSize.Small  => "Traps/Saw/SmallSaw",
+                SawSize.Medium => "Traps/Saw/MediumSaw",
+                SawSize.Large  => "Traps/Saw/LargeSaw",
+                _              => "pixel"
+            };
+        }
+
         AddComponent<SawRenderer>();
     }
 
     protected override void OnUpdate(GameTime gameTime)
     {
         float dt = WorldTime.Dt((float)gameTime.ElapsedGameTime.TotalSeconds);
+        float minDelta = Math.Min(0f, MoveRange);
+        float maxDelta = Math.Max(0f, MoveRange);
 
         if (MoveHorizontal)
         {
             Position = new Vector2(Position.X + MoveSpeed * _moveDirection * dt, Position.Y);
             float d = Position.X - _startPosition.X;
-            if (d >= MoveRange) _moveDirection = -1f;
-            else if (d <= 0f)   _moveDirection =  1f;
+
+            if (d >= maxDelta)
+            {
+                Position = new Vector2(_startPosition.X + maxDelta, Position.Y);
+                _moveDirection = -1f;
+            }
+            else if (d <= minDelta)
+            {
+                Position = new Vector2(_startPosition.X + minDelta, Position.Y);
+                _moveDirection = 1f;
+            }
         }
         else
         {
             Position = new Vector2(Position.X, Position.Y + MoveSpeed * _moveDirection * dt);
             float d = Position.Y - _startPosition.Y;
-            if (d >= MoveRange) _moveDirection = -1f;
-            else if (d <= 0f)   _moveDirection =  1f;
+
+            if (d >= maxDelta)
+            {
+                Position = new Vector2(Position.X, _startPosition.Y + maxDelta);
+                _moveDirection = -1f;
+            }
+            else if (d <= minDelta)
+            {
+                Position = new Vector2(Position.X, _startPosition.Y + minDelta);
+                _moveDirection = 1f;
+            }
         }
     }
 
@@ -99,19 +133,19 @@ public class SawTrap : Trap
         return p switch
         {
             SawPlacement.Full =>
-                new Rectangle(x - half, y - half, full, full),
+                new Rectangle(x, y - full, full, full),
 
             SawPlacement.FloorMounted =>
-                new Rectangle(x - half, y - half, full, half),
+                new Rectangle(x, y - half, full, half),
 
             SawPlacement.CeilingMounted =>
-                new Rectangle(x - half, y,        full, half),
+                new Rectangle(x, y - half, full, half),
 
             SawPlacement.LeftWallMounted =>
-                new Rectangle(x,        y - half, half, full),
+                new Rectangle(x, y - full, half, full),
 
             SawPlacement.RightWallMounted =>
-                new Rectangle(x - half, y - half, half, full),
+                new Rectangle(x, y - full, half, full),
 
             _ => base.GetCollisionBounds()
         };

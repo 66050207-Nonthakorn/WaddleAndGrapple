@@ -48,8 +48,15 @@ public class GoalFlagRenderer : Component
     private const int FlagW    = 44;
     private const int FlagH    = 36;
 
+    private const int AnimationColumns = 8;
+    private const float AnimationFrameDuration = 0.08f;
+
     private Texture2D  _pixel;
     private Texture2D  _triangleTex;
+    private Texture2D  _goalTexture;
+
+    private int   _currentFrame = 0;
+    private float _frameTimer   = 0f;
 
     private bool _reached       = false;
     private bool _completeFired = false;
@@ -60,12 +67,18 @@ public class GoalFlagRenderer : Component
     public override void Initialize()
     {
         _pixel       = ResourceManager.Instance.GetTexture("pixel");
-        _triangleTex = CreateTriangleTexture(FlagW, FlagH);
+        _goalTexture = ResourceManager.Instance.GetTexture("Collectibles/LevelFinished");
+
+        if (_goalTexture == null)
+            _triangleTex = CreateTriangleTexture(FlagW, FlagH);
     }
 
     // เรียกจาก GoalFlag.Update() ทุก frame
     public void Tick(GameTime gameTime, Player player, Vector2 pos, Action onComplete)
     {
+        if (_goalTexture != null)
+            Animate(gameTime);
+
         if (_reached)
         {
             // รอ goal animation จบแล้วเรียก CompleteLevel() ทันที
@@ -91,9 +104,39 @@ public class GoalFlagRenderer : Component
         }
     }
 
+    private void Animate(GameTime gameTime)
+    {
+        _frameTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
+        if (_frameTimer < AnimationFrameDuration) return;
+
+        _frameTimer -= AnimationFrameDuration;
+        _currentFrame = (_currentFrame + 1) % AnimationColumns;
+    }
+
     public override void Draw(SpriteBatch spriteBatch)
     {
         Vector2 pos = GameObject.Position;
+
+        if (_goalTexture != null)
+        {
+            int frameWidth = _goalTexture.Width / AnimationColumns;
+            var sourceRect = new Rectangle(
+                _currentFrame * frameWidth,
+                0,
+                frameWidth,
+                _goalTexture.Height);
+
+            spriteBatch.Draw(_goalTexture,
+                pos,
+                sourceRect,
+                Color.White,
+                0f,
+                new Vector2(frameWidth / 2f, _goalTexture.Height),
+                1f,
+                SpriteEffects.None,
+                0.13f);
+            return;
+        }
 
         // ── เสา ──────────────────────────────────────────────────────────────
         spriteBatch.Draw(_pixel,

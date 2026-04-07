@@ -56,7 +56,7 @@ public class Player : GameObject
     private const float TempGroundY = 400f;
 
     // ── Phase 7: Death ────────────────────────────────────────────────────────
-    private const float DefaultFallDeathY = 480f;   // ขอบล่างหน้าจอ → ตาย
+    private const float DefaultFallDeathY = 600f;   // ขอบล่างหน้าจอ → ตาย
     private const float DefaultScreenLeft = 0f;     // ขอบซ้าย
     private const float DefaultScreenRight = 4800f; // ขอบขวาของ demo scene
     private float _fallDeathY = DefaultFallDeathY;
@@ -353,7 +353,7 @@ public class Player : GameObject
             // ไม่ ApplyConstraint — เราเป็นคนดึงเอง
             CheckHazardCollision();
             CheckCheckpoint();
-            CheckpointManager.Instance.UpdateSection(Position.X);
+            CheckpointManager.Instance.UpdateSection(Position.X, Position.Y);
             SyncAnimation(dt);
             Rotation = FacingDirection == -1
                 ? QuaternionUtils.Euler(0, 180, 0)
@@ -408,7 +408,7 @@ public class Player : GameObject
 
         // Phase 8 — Checkpoint detection
         CheckCheckpoint();
-        CheckpointManager.Instance.UpdateSection(Position.X);
+        CheckpointManager.Instance.UpdateSection(Position.X, Position.Y);
         // Sync animation to state
         SyncAnimation(dt);
 
