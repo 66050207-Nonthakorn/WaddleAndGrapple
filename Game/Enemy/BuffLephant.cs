@@ -108,7 +108,7 @@ public class BuffLephant : Enemy
         _spriteRenderer.LayerDepth = 0.5f;
 
         var f = new AnimationFactory(
-            ResourceManager.Instance.GetTexture("Enemy/Enemy1-SpriteSheet"),
+            ResourceManager.Instance.GetTexture("Enemy/Enemy2-SpriteSheet"),
             rows: 8, columns: 8
         );
 
