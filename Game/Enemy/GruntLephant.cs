@@ -14,19 +14,10 @@ public enum GruntLephantState
 {
     Idle,
     Patrolling,
-    Taunting,         // เล่น emote เมื่อเห็น player ก่อน chase
     Chasing,
     Attacking,
     Stunned,
     Dead,
-}
-
-// ── Stunned Animation Sequence ────────────────────────────────────────────────
-public enum StunnedPhase
-{
-    Slip,             // สไลด์ลงพื้น
-    KnockedOut,       // ล้มนอน stunned
-    GettingUp,        // ลุกขึ้น
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -84,17 +75,12 @@ public class GruntLephant : Enemy
     // ── Components ────────────────────────────────────────────────────────────
     private SpriteRenderer   _spriteRenderer;
     private Animator         _animator;
-    private EnemyBoxCollider _collider;
+    private GruntLephantBoxCollider _collider;
     private List<Rectangle>  _solidRects = [];
 
     // ── Patrol Wait ───────────────────────────────────────────────────────────
     private const float PatrolWaitDuration = 3.5f;  // วินาทีหยุดที่ขอบ patrol ก่อนหันแล้วเดินต่อ
     private float _patrolWaitTimer;
-
-    // ── Death ─────────────────────────────────────────────────────────────────
-    // 7 frames × 0.13 s — ตรงกับ dead animation ที่ลงทะเบียนใน Initialize
-    private const float DeadAnimDuration = 7 * 0.13f;
-    // private float _deadTimer;
 
     // ── Stunned ───────────────────────────────────────────────────────────
     private const float SlipAnimDuration      = 4 * 0.083f;      // 4 frames × 0.083s
@@ -134,7 +120,7 @@ public class GruntLephant : Enemy
         _spriteRenderer.DrawOffset    = Vector2.Zero;
         _animator.Play("standing");
 
-        _collider = AddComponent<EnemyBoxCollider>();
+        _collider = AddComponent<GruntLephantBoxCollider>();
         UpdateColliderBounds();
     }
 
@@ -631,4 +617,4 @@ public class GruntLephant : Enemy
 }
 
 // ── Concrete BoxCollider สำหรับ Enemy ────────────────────────────────────────
-internal sealed class EnemyBoxCollider : BoxCollider { }
+internal sealed class GruntLephantBoxCollider : BoxCollider { }

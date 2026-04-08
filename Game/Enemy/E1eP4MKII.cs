@@ -409,10 +409,7 @@ public class E1eP4MKII : Enemy
         _animator.Play("dead");
     }
 
-    public override void Stun()
-    {
-        Console.WriteLine("Stun not implemented yet for this type of enemy");
-    }
+    public override void Stun() {}
 }
 
 // ── Concrete BoxCollider สำหรับ Enemy ────────────────────────────────────────

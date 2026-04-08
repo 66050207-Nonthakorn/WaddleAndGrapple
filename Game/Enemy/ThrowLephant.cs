@@ -409,7 +409,7 @@ public class ThrowLephant : Enemy
 
     public override void Stun()
     {
-        Console.WriteLine("Stun not implemented yet for this type of enemy");
+        Die();
     }
 }
 
