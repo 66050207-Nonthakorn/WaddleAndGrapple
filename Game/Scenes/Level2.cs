@@ -10,19 +10,19 @@ using System.Xml.Linq;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace WaddleAndGrapple.Game.Example;
+namespace WaddleAndGrapple.Game.Scenes;
 
-class Level3 : BaseLevel
+class Level2 : BaseLevel
 {
     GamePlayer player;
     GameObject cameraObject;
-    
+
     public override void Setup()
     {
-        LevelIndex = 3;
-        SetTotalFish(11);
+        LevelIndex = 2;
+        SetTotalFish(7);
 
-        AudioManager.Instance.PlaySong("Song/Level3");
+        AudioManager.Instance.PlaySong("Song/Level2");
 
         // Create camera
         cameraObject = base.AddGameObject<GameObject>("camera");
@@ -30,22 +30,23 @@ class Level3 : BaseLevel
         camera.SetViewport(new Viewport(0, 0,
             ScreenManager.Instance.nativeWidth,
             ScreenManager.Instance.nativeHeight));
-        camera.Zoom         = 1f; 
+        camera.Zoom         = 1f;
         camera.SmoothFollow = false;
         base.Camera         = camera;
 
         // ── Parallax Background ───────────────────────────────────────────────
         var bgObj = base.AddGameObject<GameObject>("background");
         var bg    = bgObj.AddComponent<ParallaxBackground>();
-        bg.AddLayer("Parallax/Level3/Level3-overflow",    scrollFactor: 0.00f, layerDepth: 0.00f);
-        bg.AddLayer("Parallax/Level3/Level3-background",  scrollFactor: 0.05f, layerDepth: 0.02f);
-        bg.AddLayer("Parallax/Level3/Level3-farground",   scrollFactor: 0.15f, layerDepth: 0.03f);
-        bg.AddLayer("Parallax/Level3/Level3-midground",   scrollFactor: 0.30f, layerDepth: 0.04f);
-        bg.AddLayer("Parallax/Level3/Level3-nearground",  scrollFactor: 0.50f, layerDepth: 0.06f);
+        bg.AddLayer("Parallax/Level2/Level2-sky-overflow",   scrollFactor: 0.00f, layerDepth: 0.00f);
+        bg.AddLayer("Parallax/Level2/Level2-below-overflow", scrollFactor: 0.00f, layerDepth: 0.01f);
+        bg.AddLayer("Parallax/Level2/Level2-background",     scrollFactor: 0.05f, layerDepth: 0.02f);
+        bg.AddLayer("Parallax/Level2/Level2-farground",      scrollFactor: 0.15f, layerDepth: 0.03f);
+        bg.AddLayer("Parallax/Level2/Level2-midground",      scrollFactor: 0.30f, layerDepth: 0.04f);
+        bg.AddLayer("Parallax/Level2/Level2-nearground",     scrollFactor: 0.50f, layerDepth: 0.06f);
 
         // ── Player ────────────────────────────────────────────────────────────
         player = base.AddGameObject<GamePlayer>("player");
-        var startSpawn = new Vector2(300, 320);
+        var startSpawn = new Vector2(300, 784);
         player.Position = startSpawn;
         player.SetSpawnPoint(startSpawn);
         RegisterPlayerForProgression(player);
@@ -57,7 +58,7 @@ class Level3 : BaseLevel
         var tileset          = ResourceManager.Instance.GetTexture("Tiles/LevelTileSet");
         var solidTileIndices = LoadSolidTileIndicesFromTileset("Assets/Tiled/LevelTileSet.tsx");
 
-        var mapLoader = new GameMapLoader(this, "Assets/Tiled/Level3.tmj", player);
+        var mapLoader = new GameMapLoader(this, "Assets/Tiled/Level2.tmj", player);
         var mapResult = mapLoader.Load(tileset, baseLayer: 0.5f, solidTileIndices: solidTileIndices);
 
         foreach (var goal in mapResult.GetSpawned<GoalFlag>())
@@ -170,16 +171,13 @@ class Level3 : BaseLevel
     {
         _isLevelCompleted = true;
 
-        if (LevelIndex > 0)
-        {
-            ProgressionManager.Instance.CompleteLevel(
-                LevelIndex,
-                TimeSpan.FromMilliseconds(_timerUI.GetElapsedTime()),
-                _collectedFishCount,
-                _totalFishInLevel,
-                GetLatestCheckpoint());
-        }
-        
-        SceneManager.Instance.LoadScene("Level3OutroCutscene");
+        ProgressionManager.Instance.CompleteLevel(
+            LevelIndex,
+            TimeSpan.FromMilliseconds(_timerUI.GetElapsedTime()),
+            player?.FishCount ?? 0,
+            _totalFishInLevel,
+            GetLatestCheckpoint());
+
+        SceneManager.Instance.LoadScene("levelcomplete");
     }
 }

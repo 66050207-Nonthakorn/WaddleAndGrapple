@@ -5,6 +5,7 @@ using WaddleAndGrapple.Game;
 using WaddleAndGrapple.Engine.Components.Physics;
 using WaddleAndGrapple.Engine.Managers;
 using WaddleAndGrapple.Engine.UI;
+using WaddleAndGrapple.Game.Scenes;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MonoGameGum;

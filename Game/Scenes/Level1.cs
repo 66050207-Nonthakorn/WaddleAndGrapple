@@ -4,76 +4,64 @@ using WaddleAndGrapple.Engine.Components.Tile;
 using WaddleAndGrapple.Engine.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using GamePlayer = WaddleAndGrapple.Game.Player;
+using MonoGameGum;
 using System;
-using System.Xml.Linq;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
+using WaddleAndGrapple.Game;
+using GamePlayer = WaddleAndGrapple.Game.Player;
 
-namespace WaddleAndGrapple.Game.Example;
+namespace WaddleAndGrapple.Game.Scenes;
 
-class Level2 : BaseLevel
+class Level1 : BaseLevel
 {
     GamePlayer player;
     GameObject cameraObject;
 
+
     public override void Setup()
     {
-        LevelIndex = 2;
-        SetTotalFish(7);
+        LevelIndex = 1;
+        SetTotalFish(6);
 
-        AudioManager.Instance.PlaySong("Song/Level2");
+        AudioManager.Instance.PlaySong("Song/Level1");
 
-        // // Create tilemap first
-        // tilemapObject = base.AddGameObject<GameObject>("tilemap");
-        // var tilemap = tilemapObject.AddComponent<Tilemap>();
-        // tilemap.Tileset = ResourceManager.Instance.GetTexture("Tiles/tileset");
-        // tilemap.SourceTileSize = 75;
-        // tilemap.DestinationTileSize = 150;
-        // tilemap.GameObject.Scale = new Vector2(1f, 1f);
-        // tilemap.MapData = new int[,]
-        // {
-        //     { 2, 2, 2, 2, 2, 2 },
-        // };
-
-        // var tileCollider = tilemapObject.AddComponent<TileCollider>();
-        // tileCollider.SetSolid(0, 1, 2, 3, 4, 5);
-
-        // Create camera
+        // ── Camera ────────────────────────────────────────────────────────────
         cameraObject = base.AddGameObject<GameObject>("camera");
         var camera   = cameraObject.AddComponent<Camera2D>();
         camera.SetViewport(new Viewport(0, 0,
             ScreenManager.Instance.nativeWidth,
             ScreenManager.Instance.nativeHeight));
-        camera.Zoom         = 1f; 
+        camera.Zoom         = 1f;
         camera.SmoothFollow = false;
         base.Camera         = camera;
 
         // ── Parallax Background ───────────────────────────────────────────────
         var bgObj = base.AddGameObject<GameObject>("background");
         var bg    = bgObj.AddComponent<ParallaxBackground>();
-        bg.AddLayer("Parallax/Level2/Level2-sky-overflow",   scrollFactor: 0.00f, layerDepth: 0.00f);
-        bg.AddLayer("Parallax/Level2/Level2-below-overflow", scrollFactor: 0.00f, layerDepth: 0.01f);
-        bg.AddLayer("Parallax/Level2/Level2-background",     scrollFactor: 0.05f, layerDepth: 0.02f);
-        bg.AddLayer("Parallax/Level2/Level2-farground",      scrollFactor: 0.15f, layerDepth: 0.03f);
-        bg.AddLayer("Parallax/Level2/Level2-midground",      scrollFactor: 0.30f, layerDepth: 0.04f);
-        bg.AddLayer("Parallax/Level2/Level2-nearground",     scrollFactor: 0.50f, layerDepth: 0.06f);
+        bg.AddLayer("Parallax/Level1/level1-sky-overflow",   scrollFactor: 0.00f, layerDepth: 0.00f);
+        bg.AddLayer("Parallax/Level1/level1-below-overflow", scrollFactor: 0.00f, layerDepth: 0.01f);
+        bg.AddLayer("Parallax/Level1/level1-background",     scrollFactor: 0.05f, layerDepth: 0.02f);
+        bg.AddLayer("Parallax/Level1/level1-farground",      scrollFactor: 0.15f, layerDepth: 0.03f);
+        bg.AddLayer("Parallax/Level1/level1-midground",      scrollFactor: 0.30f, layerDepth: 0.04f);
+        bg.AddLayer("Parallax/Level1/level1-nearground",     scrollFactor: 0.50f, layerDepth: 0.06f);
 
         // ── Player ────────────────────────────────────────────────────────────
         player = base.AddGameObject<GamePlayer>("player");
-        var startSpawn = new Vector2(300, 784);
+        var startSpawn = new Vector2(300, 390);
         player.Position = startSpawn;
         player.SetSpawnPoint(startSpawn);
         RegisterPlayerForProgression(player);
 
 
         // ══════════════════════════════════════════════════════════════════════
-        // TILE MAP — โหลดจาก Level2.tmj ผ่าน GameMapLoader (tile 16×16)
+        // TILE MAP — โหลดจาก Level1.tmj ผ่าน GameMapLoader (tile 16×16)
         // ══════════════════════════════════════════════════════════════════════
         var tileset          = ResourceManager.Instance.GetTexture("Tiles/LevelTileSet");
         var solidTileIndices = LoadSolidTileIndicesFromTileset("Assets/Tiled/LevelTileSet.tsx");
 
-        var mapLoader = new GameMapLoader(this, "Assets/Tiled/Level2.tmj", player);
+        var mapLoader = new GameMapLoader(this, "Assets/Tiled/Level1.tmj", player);
         var mapResult = mapLoader.Load(tileset, baseLayer: 0.5f, solidTileIndices: solidTileIndices);
 
         foreach (var goal in mapResult.GetSpawned<GoalFlag>())
@@ -106,11 +94,6 @@ class Level2 : BaseLevel
             ? tiledMap.TileLayers[0].MapData.GetLength(0)
             : tiledMap.Height;
 
-        player.SetWorldBounds(
-            left: 0f,
-            right: mapTileWidth * tiledMap.TileWidth,
-            fallDeathY: (mapTileHeight * tiledMap.TileHeight) + 1f);
-
         // Set map dimensions for camera bounds clamping
         MapWidth = mapTileWidth * tiledMap.TileWidth;
         MapHeight = mapTileHeight * tiledMap.TileHeight;
@@ -134,8 +117,8 @@ class Level2 : BaseLevel
                 RightBound      = right,
                 TopBound        = (int)r.Y,
                 BottomBound     = (int)(r.Y + r.Height),
-                LeftSpawnPoint  = i == 0 ? startSpawn : new Vector2(left + 20, startSpawn.Y),
-                RightSpawnPoint = new Vector2(right - 20, startSpawn.Y),
+                LeftSpawnPoint  = i == 0 ? startSpawn : new Vector2(left + 20, 450),
+                RightSpawnPoint = new Vector2(right - 20, 450),
             });
         }
         CheckpointManager.Instance.RegisterSections(sections.ToArray());
@@ -167,6 +150,10 @@ class Level2 : BaseLevel
         base.Setup(); // สร้าง PausedPanel + TimerUI (ต้องเป็นบรรทัดสุดท้าย)
     }
 
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    // Returns 0-based tile indices matching MapLoader's MapData (rawGid - 1).
+    // TSX tile id is already 0-based for firstGid=1, so we use it directly.
     private static int[] LoadSolidTileIndicesFromTileset(string tsxPath)
     {
         var doc = XDocument.Load(tsxPath);
@@ -193,7 +180,6 @@ class Level2 : BaseLevel
             _totalFishInLevel,
             GetLatestCheckpoint());
 
-        Console.WriteLine($"Level {LevelIndex} completed!");
         SceneManager.Instance.LoadScene("levelcomplete");
     }
 }
